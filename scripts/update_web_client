@@ -22,8 +22,19 @@
 #      vite-pwa service-worker registration tag (the worker is `selfDestroying: true` and
 #      does nothing useful, but its hardcoded root-scoped registration would otherwise 404
 #      and spam the console under the sub-path).
-#   4. Replaces custom_components/meshtastic/meshtastic_web/static with the patched output.
-#   5. Updates custom_components/meshtastic/meshtastic_web/version.py to the new tag.
+#   4. Patches the i18next loadPath/addPath baked into the JS bundle(s) the same way -
+#      Vite has no `base` config, so this is root-absolute too and isn't in index.html at
+#      all, it's a string literal inside the app code (confirmed live: without this, every
+#      translation file 404s and the UI falls back to showing raw translation keys instead
+#      of text on buttons/labels).
+#   5. Replaces custom_components/meshtastic/meshtastic_web/static with the patched output.
+#   6. Updates custom_components/meshtastic/meshtastic_web/version.py to the new tag.
+#
+# Known upstream gap NOT fixed by this script: index.html's <link rel="icon"> points at
+# icon.svg and the CSS references self-hosted font files under /fonts/ that simply aren't
+# included in the release tar as of v2.7.1 - both 404 regardless of the sub-path (browsers
+# fall back gracefully), this is missing content in the upstream release itself, not a path
+# problem we can patch our way out of.
 #
 # Nothing is committed automatically - review `git status`/`git diff` and commit yourself,
 # same as scripts/generate_protobufs.
@@ -93,6 +104,18 @@ $SEDCMD 's/(href|src)="\/([^/])/\1="\/meshtastic\/web\/\2/g' "${INDEX_HTML}"
 # index.html is minified to a single line, so this must be a substitution,
 # not a line-delete (`/pattern/d` would wipe the entire file).
 $SEDCMD 's/<script[^>]*id="vite-plugin-pwa:register-sw"[^>]*><\/script>//' "${INDEX_HTML}"
+
+# The i18next backend config is also root-absolute and baked into the JS
+# bundle itself (Vite has no `base` config, so every hardcoded path in the
+# app code assumes it's served from "/") - confirmed by a real deployment:
+# translation files 404'd at /i18n/locales/... so buttons showed raw
+# translation keys instead of localized text. Patch every .js file for this,
+# since the exact chunk it lands in isn't guaranteed to stay the same across
+# releases.
+echo "Patching i18next loadPath in JS bundles for /meshtastic/web/ sub-path"
+find "${EXTRACT_DIR}" -type f -name '*.js' -print0 | while IFS= read -r -d '' js_file; do
+    $SEDCMD 's/(loadPath|addPath):"\/i18n\//\1:"\/meshtastic\/web\/i18n\//g' "${js_file}"
+done
 
 echo "Replacing ${STATIC_DIR}"
 rm -rf "${STATIC_DIR}"
