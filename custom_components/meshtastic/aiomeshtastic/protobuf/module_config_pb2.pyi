@@ -3,34 +3,29 @@
 isort:skip_file
 """
 
-from collections import abc as _abc
-from google.protobuf import descriptor as _descriptor
-from google.protobuf import message as _message
-from google.protobuf.internal import containers as _containers
-from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
-from meshtastic.aiomeshtastic.protobuf import atak_pb2 as _atak_pb2
-import builtins as _builtins
+import builtins
+import collections.abc
+import google.protobuf.descriptor
+import google.protobuf.internal.containers
+import google.protobuf.internal.enum_type_wrapper
+import google.protobuf.message
+from . import atak_pb2
 import sys
-import typing as _typing
+import typing
 
-if sys.version_info >= (3, 11):
-    from typing import TypeAlias as _TypeAlias, Never as _Never
+if sys.version_info >= (3, 10):
+    import typing as typing_extensions
 else:
-    from typing_extensions import TypeAlias as _TypeAlias, Never as _Never
+    import typing_extensions
 
-if sys.version_info >= (3, 13):
-    from warnings import deprecated as _deprecated
-else:
-    from typing_extensions import deprecated as _deprecated
-
-DESCRIPTOR: _descriptor.FileDescriptor
+DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 class _RemoteHardwarePinType:
-    ValueType = _typing.NewType("ValueType", _builtins.int)
-    V: _TypeAlias = ValueType  # noqa: Y015
+    ValueType = typing.NewType("ValueType", builtins.int)
+    V: typing_extensions.TypeAlias = ValueType
 
-class _RemoteHardwarePinTypeEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_RemoteHardwarePinType.ValueType], _builtins.type):
-    DESCRIPTOR: _descriptor.EnumDescriptor
+class _RemoteHardwarePinTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_RemoteHardwarePinType.ValueType], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
     UNKNOWN: _RemoteHardwarePinType.ValueType  # 0
     """
     Unset/unused
@@ -58,96 +53,86 @@ DIGITAL_WRITE: RemoteHardwarePinType.ValueType  # 2
 """
 GPIO pin can be written to (high / low)
 """
-Global___RemoteHardwarePinType: _TypeAlias = RemoteHardwarePinType  # noqa: Y015
+Global___RemoteHardwarePinType: typing_extensions.TypeAlias = RemoteHardwarePinType
 
-@_typing.final
-class ModuleConfig(_message.Message):
+@typing.final
+class ModuleConfig(google.protobuf.message.Message):
     """
     Module Config
     """
 
-    DESCRIPTOR: _descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-    @_typing.final
-    class MQTTConfig(_message.Message):
+    @typing.final
+    class MQTTConfig(google.protobuf.message.Message):
         """
         MQTT Client Config
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        ADDRESS_FIELD_NUMBER: _builtins.int
-        USERNAME_FIELD_NUMBER: _builtins.int
-        PASSWORD_FIELD_NUMBER: _builtins.int
-        ENCRYPTION_ENABLED_FIELD_NUMBER: _builtins.int
-        JSON_ENABLED_FIELD_NUMBER: _builtins.int
-        TLS_ENABLED_FIELD_NUMBER: _builtins.int
-        ROOT_FIELD_NUMBER: _builtins.int
-        PROXY_TO_CLIENT_ENABLED_FIELD_NUMBER: _builtins.int
-        MAP_REPORTING_ENABLED_FIELD_NUMBER: _builtins.int
-        MAP_REPORT_SETTINGS_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        ADDRESS_FIELD_NUMBER: builtins.int
+        USERNAME_FIELD_NUMBER: builtins.int
+        PASSWORD_FIELD_NUMBER: builtins.int
+        ENCRYPTION_ENABLED_FIELD_NUMBER: builtins.int
+        JSON_ENABLED_FIELD_NUMBER: builtins.int
+        TLS_ENABLED_FIELD_NUMBER: builtins.int
+        ROOT_FIELD_NUMBER: builtins.int
+        PROXY_TO_CLIENT_ENABLED_FIELD_NUMBER: builtins.int
+        MAP_REPORTING_ENABLED_FIELD_NUMBER: builtins.int
+        MAP_REPORT_SETTINGS_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         If a meshtastic node is able to reach the internet it will normally attempt to gateway any channels that are marked as
         is_uplink_enabled or is_downlink_enabled.
         """
-        address: _builtins.str
+        address: builtins.str
         """
         The server to use for our MQTT global message gateway feature.
         If not set, the default server will be used
         """
-        username: _builtins.str
+        username: builtins.str
         """
         MQTT username to use (most useful for a custom MQTT server).
         If using a custom server, this will be honoured even if empty.
         If using the default server, this will only be honoured if set, otherwise the device will use the default username
         """
-        password: _builtins.str
+        password: builtins.str
         """
         MQTT password to use (most useful for a custom MQTT server).
         If using a custom server, this will be honoured even if empty.
         If using the default server, this will only be honoured if set, otherwise the device will use the default password
         """
-        encryption_enabled: _builtins.bool
+        encryption_enabled: builtins.bool
         """
         Whether to send encrypted or decrypted packets to MQTT.
         This parameter is only honoured if you also set server
         (the default official mqtt.meshtastic.org server can handle encrypted packets)
         Decrypted packets may be useful for external systems that want to consume meshtastic packets
         """
-        @_builtins.property
-        @_deprecated("""This field has been marked as deprecated using proto field options.""")
-        def json_enabled(self) -> _builtins.bool:
-            """
-            Deprecated: JSON packet support on MQTT was removed, and this field is ignored.
-            """
-
-        @json_enabled.setter
-        @_deprecated("""This field has been marked as deprecated using proto field options.""")
-        def json_enabled(self, value: _builtins.bool) -> None:
-            """
-            Deprecated: JSON packet support on MQTT was removed, and this field is ignored.
-            """
-
-        tls_enabled: _builtins.bool
+        json_enabled: builtins.bool
+        """
+        Deprecated: JSON packet support on MQTT was removed, and this field is ignored.
+        """
+        tls_enabled: builtins.bool
         """
         If true, we attempt to establish a secure connection using TLS
         """
-        root: _builtins.str
+        root: builtins.str
         """
         The root topic to use for MQTT messages. Default is "msh".
         This is useful if you want to use a single MQTT server for multiple meshtastic networks and separate them via ACLs
         """
-        proxy_to_client_enabled: _builtins.bool
+        proxy_to_client_enabled: builtins.bool
         """
         If true, we can use the connected phone / client to proxy messages to MQTT instead of a direct connection
         """
-        map_reporting_enabled: _builtins.bool
+        map_reporting_enabled: builtins.bool
         """
         If true, we will periodically report unencrypted information about our node to a map via MQTT
         """
-        @_builtins.property
+        @property
         def map_report_settings(self) -> Global___ModuleConfig.MapReportSettings:
             """
             Settings for reporting information about our node to a map via MQTT
@@ -156,81 +141,74 @@ class ModuleConfig(_message.Message):
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            address: _builtins.str = ...,
-            username: _builtins.str = ...,
-            password: _builtins.str = ...,
-            encryption_enabled: _builtins.bool = ...,
-            json_enabled: _builtins.bool = ...,
-            tls_enabled: _builtins.bool = ...,
-            root: _builtins.str = ...,
-            proxy_to_client_enabled: _builtins.bool = ...,
-            map_reporting_enabled: _builtins.bool = ...,
+            enabled: builtins.bool = ...,
+            address: builtins.str = ...,
+            username: builtins.str = ...,
+            password: builtins.str = ...,
+            encryption_enabled: builtins.bool = ...,
+            json_enabled: builtins.bool = ...,
+            tls_enabled: builtins.bool = ...,
+            root: builtins.str = ...,
+            proxy_to_client_enabled: builtins.bool = ...,
+            map_reporting_enabled: builtins.bool = ...,
             map_report_settings: Global___ModuleConfig.MapReportSettings | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["map_report_settings", b"map_report_settings"]  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["address", b"address", "enabled", b"enabled", "encryption_enabled", b"encryption_enabled", "json_enabled", b"json_enabled", "map_report_settings", b"map_report_settings", "map_reporting_enabled", b"map_reporting_enabled", "password", b"password", "proxy_to_client_enabled", b"proxy_to_client_enabled", "root", b"root", "tls_enabled", b"tls_enabled", "username", b"username"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def HasField(self, field_name: typing.Literal["map_report_settings", b"map_report_settings"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing.Literal["address", b"address", "enabled", b"enabled", "encryption_enabled", b"encryption_enabled", "json_enabled", b"json_enabled", "map_report_settings", b"map_report_settings", "map_reporting_enabled", b"map_reporting_enabled", "password", b"password", "proxy_to_client_enabled", b"proxy_to_client_enabled", "root", b"root", "tls_enabled", b"tls_enabled", "username", b"username"]) -> None: ...
 
-    @_typing.final
-    class MapReportSettings(_message.Message):
+    @typing.final
+    class MapReportSettings(google.protobuf.message.Message):
         """
         Settings for reporting unencrypted information about our node to a map via MQTT
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        PUBLISH_INTERVAL_SECS_FIELD_NUMBER: _builtins.int
-        POSITION_PRECISION_FIELD_NUMBER: _builtins.int
-        SHOULD_REPORT_LOCATION_FIELD_NUMBER: _builtins.int
-        publish_interval_secs: _builtins.int
+        PUBLISH_INTERVAL_SECS_FIELD_NUMBER: builtins.int
+        POSITION_PRECISION_FIELD_NUMBER: builtins.int
+        SHOULD_REPORT_LOCATION_FIELD_NUMBER: builtins.int
+        publish_interval_secs: builtins.int
         """
         How often we should report our info to the map (in seconds)
         """
-        position_precision: _builtins.int
+        position_precision: builtins.int
         """
         Bits of precision for the location sent (default of 32 is full precision).
         """
-        should_report_location: _builtins.bool
+        should_report_location: builtins.bool
         """
         Whether we have opted-in to report our location to the map
         """
         def __init__(
             self,
             *,
-            publish_interval_secs: _builtins.int = ...,
-            position_precision: _builtins.int = ...,
-            should_report_location: _builtins.bool = ...,
+            publish_interval_secs: builtins.int = ...,
+            position_precision: builtins.int = ...,
+            should_report_location: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["position_precision", b"position_precision", "publish_interval_secs", b"publish_interval_secs", "should_report_location", b"should_report_location"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["position_precision", b"position_precision", "publish_interval_secs", b"publish_interval_secs", "should_report_location", b"should_report_location"]) -> None: ...
 
-    @_typing.final
-    class RemoteHardwareConfig(_message.Message):
+    @typing.final
+    class RemoteHardwareConfig(google.protobuf.message.Message):
         """
         RemoteHardwareModule Config
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        ALLOW_UNDEFINED_PIN_ACCESS_FIELD_NUMBER: _builtins.int
-        AVAILABLE_PINS_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        ALLOW_UNDEFINED_PIN_ACCESS_FIELD_NUMBER: builtins.int
+        AVAILABLE_PINS_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         Whether the Module is enabled
         """
-        allow_undefined_pin_access: _builtins.bool
+        allow_undefined_pin_access: builtins.bool
         """
         Whether the Module allows consumers to read / write to pins not defined in available_pins
         """
-        @_builtins.property
-        def available_pins(self) -> _containers.RepeatedCompositeFieldContainer[Global___RemoteHardwarePin]:
+        @property
+        def available_pins(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[Global___RemoteHardwarePin]:
             """
             Exposes the available pins to the mesh for reading and writing
             """
@@ -238,37 +216,33 @@ class ModuleConfig(_message.Message):
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            allow_undefined_pin_access: _builtins.bool = ...,
-            available_pins: _abc.Iterable[Global___RemoteHardwarePin] | None = ...,
+            enabled: builtins.bool = ...,
+            allow_undefined_pin_access: builtins.bool = ...,
+            available_pins: collections.abc.Iterable[Global___RemoteHardwarePin] | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["allow_undefined_pin_access", b"allow_undefined_pin_access", "available_pins", b"available_pins", "enabled", b"enabled"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["allow_undefined_pin_access", b"allow_undefined_pin_access", "available_pins", b"available_pins", "enabled", b"enabled"]) -> None: ...
 
-    @_typing.final
-    class NeighborInfoConfig(_message.Message):
+    @typing.final
+    class NeighborInfoConfig(google.protobuf.message.Message):
         """
         NeighborInfoModule Config
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        UPDATE_INTERVAL_FIELD_NUMBER: _builtins.int
-        TRANSMIT_OVER_LORA_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        UPDATE_INTERVAL_FIELD_NUMBER: builtins.int
+        TRANSMIT_OVER_LORA_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         Whether the Module is enabled
         """
-        update_interval: _builtins.int
+        update_interval: builtins.int
         """
         Interval in seconds of how often we should try to send our
         Neighbor Info (minimum is 14400, i.e., 4 hours)
         """
-        transmit_over_lora: _builtins.bool
+        transmit_over_lora: builtins.bool
         """
         Whether in addition to sending it to MQTT and the PhoneAPI, our NeighborInfo should be transmitted over LoRa.
         Note that this is not available on a channel with default key and name.
@@ -276,30 +250,26 @@ class ModuleConfig(_message.Message):
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            update_interval: _builtins.int = ...,
-            transmit_over_lora: _builtins.bool = ...,
+            enabled: builtins.bool = ...,
+            update_interval: builtins.int = ...,
+            transmit_over_lora: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["enabled", b"enabled", "transmit_over_lora", b"transmit_over_lora", "update_interval", b"update_interval"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["enabled", b"enabled", "transmit_over_lora", b"transmit_over_lora", "update_interval", b"update_interval"]) -> None: ...
 
-    @_typing.final
-    class DetectionSensorConfig(_message.Message):
+    @typing.final
+    class DetectionSensorConfig(google.protobuf.message.Message):
         """
         Detection Sensor Module Config
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
         class _TriggerType:
-            ValueType = _typing.NewType("ValueType", _builtins.int)
-            V: _TypeAlias = ValueType  # noqa: Y015
+            ValueType = typing.NewType("ValueType", builtins.int)
+            V: typing_extensions.TypeAlias = ValueType
 
-        class _TriggerTypeEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[ModuleConfig.DetectionSensorConfig._TriggerType.ValueType], _builtins.type):
-            DESCRIPTOR: _descriptor.EnumDescriptor
+        class _TriggerTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ModuleConfig.DetectionSensorConfig._TriggerType.ValueType], builtins.type):
+            DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
             LOGIC_LOW: ModuleConfig.DetectionSensorConfig._TriggerType.ValueType  # 0
             """Event is triggered if pin is low"""
             LOGIC_HIGH: ModuleConfig.DetectionSensorConfig._TriggerType.ValueType  # 1
@@ -335,42 +305,42 @@ class ModuleConfig(_message.Message):
         "active"
         """
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        MINIMUM_BROADCAST_SECS_FIELD_NUMBER: _builtins.int
-        STATE_BROADCAST_SECS_FIELD_NUMBER: _builtins.int
-        SEND_BELL_FIELD_NUMBER: _builtins.int
-        NAME_FIELD_NUMBER: _builtins.int
-        MONITOR_PIN_FIELD_NUMBER: _builtins.int
-        DETECTION_TRIGGER_TYPE_FIELD_NUMBER: _builtins.int
-        USE_PULLUP_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        MINIMUM_BROADCAST_SECS_FIELD_NUMBER: builtins.int
+        STATE_BROADCAST_SECS_FIELD_NUMBER: builtins.int
+        SEND_BELL_FIELD_NUMBER: builtins.int
+        NAME_FIELD_NUMBER: builtins.int
+        MONITOR_PIN_FIELD_NUMBER: builtins.int
+        DETECTION_TRIGGER_TYPE_FIELD_NUMBER: builtins.int
+        USE_PULLUP_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         Whether the Module is enabled
         """
-        minimum_broadcast_secs: _builtins.int
+        minimum_broadcast_secs: builtins.int
         """
         Interval in seconds of how often we can send a message to the mesh when a
         trigger event is detected
         """
-        state_broadcast_secs: _builtins.int
+        state_broadcast_secs: builtins.int
         """
         Interval in seconds of how often we should send a message to the mesh
         with the current state regardless of trigger events When set to 0, only
         trigger events will be broadcasted Works as a sort of status heartbeat
         for peace of mind
         """
-        send_bell: _builtins.bool
+        send_bell: builtins.bool
         """
         Send ASCII bell with alert message
         Useful for triggering ext. notification on bell
         """
-        name: _builtins.str
+        name: builtins.str
         """
         Friendly name used to format message sent to mesh
         Example: A name "Motion" would result in a message "Motion detected"
         Maximum length of 20 characters
         """
-        monitor_pin: _builtins.int
+        monitor_pin: builtins.int
         """
         GPIO pin to monitor for state changes
         """
@@ -378,7 +348,7 @@ class ModuleConfig(_message.Message):
         """
         The type of trigger event to be used
         """
-        use_pullup: _builtins.bool
+        use_pullup: builtins.bool
         """
         Whether or not use INPUT_PULLUP mode for GPIO pin
         Only applicable if the board uses pull-up resistors on the pin
@@ -386,35 +356,31 @@ class ModuleConfig(_message.Message):
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            minimum_broadcast_secs: _builtins.int = ...,
-            state_broadcast_secs: _builtins.int = ...,
-            send_bell: _builtins.bool = ...,
-            name: _builtins.str = ...,
-            monitor_pin: _builtins.int = ...,
+            enabled: builtins.bool = ...,
+            minimum_broadcast_secs: builtins.int = ...,
+            state_broadcast_secs: builtins.int = ...,
+            send_bell: builtins.bool = ...,
+            name: builtins.str = ...,
+            monitor_pin: builtins.int = ...,
             detection_trigger_type: Global___ModuleConfig.DetectionSensorConfig.TriggerType.ValueType = ...,
-            use_pullup: _builtins.bool = ...,
+            use_pullup: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["detection_trigger_type", b"detection_trigger_type", "enabled", b"enabled", "minimum_broadcast_secs", b"minimum_broadcast_secs", "monitor_pin", b"monitor_pin", "name", b"name", "send_bell", b"send_bell", "state_broadcast_secs", b"state_broadcast_secs", "use_pullup", b"use_pullup"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["detection_trigger_type", b"detection_trigger_type", "enabled", b"enabled", "minimum_broadcast_secs", b"minimum_broadcast_secs", "monitor_pin", b"monitor_pin", "name", b"name", "send_bell", b"send_bell", "state_broadcast_secs", b"state_broadcast_secs", "use_pullup", b"use_pullup"]) -> None: ...
 
-    @_typing.final
-    class AudioConfig(_message.Message):
+    @typing.final
+    class AudioConfig(google.protobuf.message.Message):
         """
         Audio Config for codec2 voice
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
         class _Audio_Baud:
-            ValueType = _typing.NewType("ValueType", _builtins.int)
-            V: _TypeAlias = ValueType  # noqa: Y015
+            ValueType = typing.NewType("ValueType", builtins.int)
+            V: typing_extensions.TypeAlias = ValueType
 
-        class _Audio_BaudEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[ModuleConfig.AudioConfig._Audio_Baud.ValueType], _builtins.type):
-            DESCRIPTOR: _descriptor.EnumDescriptor
+        class _Audio_BaudEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ModuleConfig.AudioConfig._Audio_Baud.ValueType], builtins.type):
+            DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
             CODEC2_DEFAULT: ModuleConfig.AudioConfig._Audio_Baud.ValueType  # 0
             CODEC2_3200: ModuleConfig.AudioConfig._Audio_Baud.ValueType  # 1
             CODEC2_2400: ModuleConfig.AudioConfig._Audio_Baud.ValueType  # 2
@@ -440,18 +406,18 @@ class ModuleConfig(_message.Message):
         CODEC2_700: ModuleConfig.AudioConfig.Audio_Baud.ValueType  # 7
         CODEC2_700B: ModuleConfig.AudioConfig.Audio_Baud.ValueType  # 8
 
-        CODEC2_ENABLED_FIELD_NUMBER: _builtins.int
-        PTT_PIN_FIELD_NUMBER: _builtins.int
-        BITRATE_FIELD_NUMBER: _builtins.int
-        I2S_WS_FIELD_NUMBER: _builtins.int
-        I2S_SD_FIELD_NUMBER: _builtins.int
-        I2S_DIN_FIELD_NUMBER: _builtins.int
-        I2S_SCK_FIELD_NUMBER: _builtins.int
-        codec2_enabled: _builtins.bool
+        CODEC2_ENABLED_FIELD_NUMBER: builtins.int
+        PTT_PIN_FIELD_NUMBER: builtins.int
+        BITRATE_FIELD_NUMBER: builtins.int
+        I2S_WS_FIELD_NUMBER: builtins.int
+        I2S_SD_FIELD_NUMBER: builtins.int
+        I2S_DIN_FIELD_NUMBER: builtins.int
+        I2S_SCK_FIELD_NUMBER: builtins.int
+        codec2_enabled: builtins.bool
         """
         Whether Audio is enabled
         """
-        ptt_pin: _builtins.int
+        ptt_pin: builtins.int
         """
         PTT Pin
         """
@@ -459,199 +425,187 @@ class ModuleConfig(_message.Message):
         """
         The audio sample rate to use for codec2
         """
-        i2s_ws: _builtins.int
+        i2s_ws: builtins.int
         """
         I2S Word Select
         """
-        i2s_sd: _builtins.int
+        i2s_sd: builtins.int
         """
         I2S Data IN
         """
-        i2s_din: _builtins.int
+        i2s_din: builtins.int
         """
         I2S Data OUT
         """
-        i2s_sck: _builtins.int
+        i2s_sck: builtins.int
         """
         I2S Clock
         """
         def __init__(
             self,
             *,
-            codec2_enabled: _builtins.bool = ...,
-            ptt_pin: _builtins.int = ...,
+            codec2_enabled: builtins.bool = ...,
+            ptt_pin: builtins.int = ...,
             bitrate: Global___ModuleConfig.AudioConfig.Audio_Baud.ValueType = ...,
-            i2s_ws: _builtins.int = ...,
-            i2s_sd: _builtins.int = ...,
-            i2s_din: _builtins.int = ...,
-            i2s_sck: _builtins.int = ...,
+            i2s_ws: builtins.int = ...,
+            i2s_sd: builtins.int = ...,
+            i2s_din: builtins.int = ...,
+            i2s_sck: builtins.int = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["bitrate", b"bitrate", "codec2_enabled", b"codec2_enabled", "i2s_din", b"i2s_din", "i2s_sck", b"i2s_sck", "i2s_sd", b"i2s_sd", "i2s_ws", b"i2s_ws", "ptt_pin", b"ptt_pin"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["bitrate", b"bitrate", "codec2_enabled", b"codec2_enabled", "i2s_din", b"i2s_din", "i2s_sck", b"i2s_sck", "i2s_sd", b"i2s_sd", "i2s_ws", b"i2s_ws", "ptt_pin", b"ptt_pin"]) -> None: ...
 
-    @_typing.final
-    class PaxcounterConfig(_message.Message):
+    @typing.final
+    class PaxcounterConfig(google.protobuf.message.Message):
         """
         Config for the Paxcounter Module
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        PAXCOUNTER_UPDATE_INTERVAL_FIELD_NUMBER: _builtins.int
-        WIFI_THRESHOLD_FIELD_NUMBER: _builtins.int
-        BLE_THRESHOLD_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        PAXCOUNTER_UPDATE_INTERVAL_FIELD_NUMBER: builtins.int
+        WIFI_THRESHOLD_FIELD_NUMBER: builtins.int
+        BLE_THRESHOLD_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         Enable the Paxcounter Module
         """
-        paxcounter_update_interval: _builtins.int
+        paxcounter_update_interval: builtins.int
         """
         Interval in seconds of how often we should try to send our
         metrics to the mesh
         """
-        wifi_threshold: _builtins.int
+        wifi_threshold: builtins.int
         """
         WiFi RSSI threshold. Defaults to -80
         """
-        ble_threshold: _builtins.int
+        ble_threshold: builtins.int
         """
         BLE RSSI threshold. Defaults to -80
         """
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            paxcounter_update_interval: _builtins.int = ...,
-            wifi_threshold: _builtins.int = ...,
-            ble_threshold: _builtins.int = ...,
+            enabled: builtins.bool = ...,
+            paxcounter_update_interval: builtins.int = ...,
+            wifi_threshold: builtins.int = ...,
+            ble_threshold: builtins.int = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["ble_threshold", b"ble_threshold", "enabled", b"enabled", "paxcounter_update_interval", b"paxcounter_update_interval", "wifi_threshold", b"wifi_threshold"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["ble_threshold", b"ble_threshold", "enabled", b"enabled", "paxcounter_update_interval", b"paxcounter_update_interval", "wifi_threshold", b"wifi_threshold"]) -> None: ...
 
-    @_typing.final
-    class TrafficManagementConfig(_message.Message):
+    @typing.final
+    class TrafficManagementConfig(google.protobuf.message.Message):
         """
         Config for the Traffic Management module.
         Provides packet inspection and traffic shaping to help reduce channel utilization
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        POSITION_DEDUP_ENABLED_FIELD_NUMBER: _builtins.int
-        POSITION_PRECISION_BITS_FIELD_NUMBER: _builtins.int
-        POSITION_MIN_INTERVAL_SECS_FIELD_NUMBER: _builtins.int
-        NODEINFO_DIRECT_RESPONSE_FIELD_NUMBER: _builtins.int
-        NODEINFO_DIRECT_RESPONSE_MAX_HOPS_FIELD_NUMBER: _builtins.int
-        RATE_LIMIT_ENABLED_FIELD_NUMBER: _builtins.int
-        RATE_LIMIT_WINDOW_SECS_FIELD_NUMBER: _builtins.int
-        RATE_LIMIT_MAX_PACKETS_FIELD_NUMBER: _builtins.int
-        DROP_UNKNOWN_ENABLED_FIELD_NUMBER: _builtins.int
-        UNKNOWN_PACKET_THRESHOLD_FIELD_NUMBER: _builtins.int
-        EXHAUST_HOP_TELEMETRY_FIELD_NUMBER: _builtins.int
-        EXHAUST_HOP_POSITION_FIELD_NUMBER: _builtins.int
-        ROUTER_PRESERVE_HOPS_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        POSITION_DEDUP_ENABLED_FIELD_NUMBER: builtins.int
+        POSITION_PRECISION_BITS_FIELD_NUMBER: builtins.int
+        POSITION_MIN_INTERVAL_SECS_FIELD_NUMBER: builtins.int
+        NODEINFO_DIRECT_RESPONSE_FIELD_NUMBER: builtins.int
+        NODEINFO_DIRECT_RESPONSE_MAX_HOPS_FIELD_NUMBER: builtins.int
+        RATE_LIMIT_ENABLED_FIELD_NUMBER: builtins.int
+        RATE_LIMIT_WINDOW_SECS_FIELD_NUMBER: builtins.int
+        RATE_LIMIT_MAX_PACKETS_FIELD_NUMBER: builtins.int
+        DROP_UNKNOWN_ENABLED_FIELD_NUMBER: builtins.int
+        UNKNOWN_PACKET_THRESHOLD_FIELD_NUMBER: builtins.int
+        EXHAUST_HOP_TELEMETRY_FIELD_NUMBER: builtins.int
+        EXHAUST_HOP_POSITION_FIELD_NUMBER: builtins.int
+        ROUTER_PRESERVE_HOPS_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         Master enable for traffic management module
         """
-        position_dedup_enabled: _builtins.bool
+        position_dedup_enabled: builtins.bool
         """
         Enable position deduplication to drop redundant position broadcasts
         """
-        position_precision_bits: _builtins.int
+        position_precision_bits: builtins.int
         """
         Number of bits of precision for position deduplication (0-32)
         """
-        position_min_interval_secs: _builtins.int
+        position_min_interval_secs: builtins.int
         """
         Minimum interval in seconds between position updates from the same node
         """
-        nodeinfo_direct_response: _builtins.bool
+        nodeinfo_direct_response: builtins.bool
         """
         Enable direct response to NodeInfo requests from local cache
         """
-        nodeinfo_direct_response_max_hops: _builtins.int
+        nodeinfo_direct_response_max_hops: builtins.int
         """
         Minimum hop distance from requestor before responding to NodeInfo requests
         """
-        rate_limit_enabled: _builtins.bool
+        rate_limit_enabled: builtins.bool
         """
         Enable per-node rate limiting to throttle chatty nodes
         """
-        rate_limit_window_secs: _builtins.int
+        rate_limit_window_secs: builtins.int
         """
         Time window in seconds for rate limiting calculations
         """
-        rate_limit_max_packets: _builtins.int
+        rate_limit_max_packets: builtins.int
         """
         Maximum packets allowed per node within the rate limit window
         """
-        drop_unknown_enabled: _builtins.bool
+        drop_unknown_enabled: builtins.bool
         """
         Enable dropping of unknown/undecryptable packets per rate_limit_window_secs
         """
-        unknown_packet_threshold: _builtins.int
+        unknown_packet_threshold: builtins.int
         """
         Number of unknown packets before dropping from a node
         """
-        exhaust_hop_telemetry: _builtins.bool
+        exhaust_hop_telemetry: builtins.bool
         """
         Set hop_limit to 0 for relayed telemetry broadcasts (own packets unaffected)
         """
-        exhaust_hop_position: _builtins.bool
+        exhaust_hop_position: builtins.bool
         """
         Set hop_limit to 0 for relayed position broadcasts (own packets unaffected)
         """
-        router_preserve_hops: _builtins.bool
+        router_preserve_hops: builtins.bool
         """
         Preserve hop_limit for router-to-router traffic
         """
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            position_dedup_enabled: _builtins.bool = ...,
-            position_precision_bits: _builtins.int = ...,
-            position_min_interval_secs: _builtins.int = ...,
-            nodeinfo_direct_response: _builtins.bool = ...,
-            nodeinfo_direct_response_max_hops: _builtins.int = ...,
-            rate_limit_enabled: _builtins.bool = ...,
-            rate_limit_window_secs: _builtins.int = ...,
-            rate_limit_max_packets: _builtins.int = ...,
-            drop_unknown_enabled: _builtins.bool = ...,
-            unknown_packet_threshold: _builtins.int = ...,
-            exhaust_hop_telemetry: _builtins.bool = ...,
-            exhaust_hop_position: _builtins.bool = ...,
-            router_preserve_hops: _builtins.bool = ...,
+            enabled: builtins.bool = ...,
+            position_dedup_enabled: builtins.bool = ...,
+            position_precision_bits: builtins.int = ...,
+            position_min_interval_secs: builtins.int = ...,
+            nodeinfo_direct_response: builtins.bool = ...,
+            nodeinfo_direct_response_max_hops: builtins.int = ...,
+            rate_limit_enabled: builtins.bool = ...,
+            rate_limit_window_secs: builtins.int = ...,
+            rate_limit_max_packets: builtins.int = ...,
+            drop_unknown_enabled: builtins.bool = ...,
+            unknown_packet_threshold: builtins.int = ...,
+            exhaust_hop_telemetry: builtins.bool = ...,
+            exhaust_hop_position: builtins.bool = ...,
+            router_preserve_hops: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["drop_unknown_enabled", b"drop_unknown_enabled", "enabled", b"enabled", "exhaust_hop_position", b"exhaust_hop_position", "exhaust_hop_telemetry", b"exhaust_hop_telemetry", "nodeinfo_direct_response", b"nodeinfo_direct_response", "nodeinfo_direct_response_max_hops", b"nodeinfo_direct_response_max_hops", "position_dedup_enabled", b"position_dedup_enabled", "position_min_interval_secs", b"position_min_interval_secs", "position_precision_bits", b"position_precision_bits", "rate_limit_enabled", b"rate_limit_enabled", "rate_limit_max_packets", b"rate_limit_max_packets", "rate_limit_window_secs", b"rate_limit_window_secs", "router_preserve_hops", b"router_preserve_hops", "unknown_packet_threshold", b"unknown_packet_threshold"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["drop_unknown_enabled", b"drop_unknown_enabled", "enabled", b"enabled", "exhaust_hop_position", b"exhaust_hop_position", "exhaust_hop_telemetry", b"exhaust_hop_telemetry", "nodeinfo_direct_response", b"nodeinfo_direct_response", "nodeinfo_direct_response_max_hops", b"nodeinfo_direct_response_max_hops", "position_dedup_enabled", b"position_dedup_enabled", "position_min_interval_secs", b"position_min_interval_secs", "position_precision_bits", b"position_precision_bits", "rate_limit_enabled", b"rate_limit_enabled", "rate_limit_max_packets", b"rate_limit_max_packets", "rate_limit_window_secs", b"rate_limit_window_secs", "router_preserve_hops", b"router_preserve_hops", "unknown_packet_threshold", b"unknown_packet_threshold"]) -> None: ...
 
-    @_typing.final
-    class SerialConfig(_message.Message):
+    @typing.final
+    class SerialConfig(google.protobuf.message.Message):
         """
         Serial Config
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
         class _Serial_Baud:
-            ValueType = _typing.NewType("ValueType", _builtins.int)
-            V: _TypeAlias = ValueType  # noqa: Y015
+            ValueType = typing.NewType("ValueType", builtins.int)
+            V: typing_extensions.TypeAlias = ValueType
 
-        class _Serial_BaudEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[ModuleConfig.SerialConfig._Serial_Baud.ValueType], _builtins.type):
-            DESCRIPTOR: _descriptor.EnumDescriptor
+        class _Serial_BaudEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ModuleConfig.SerialConfig._Serial_Baud.ValueType], builtins.type):
+            DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
             BAUD_DEFAULT: ModuleConfig.SerialConfig._Serial_Baud.ValueType  # 0
             BAUD_110: ModuleConfig.SerialConfig._Serial_Baud.ValueType  # 1
             BAUD_300: ModuleConfig.SerialConfig._Serial_Baud.ValueType  # 2
@@ -692,11 +646,11 @@ class ModuleConfig(_message.Message):
         BAUD_921600: ModuleConfig.SerialConfig.Serial_Baud.ValueType  # 15
 
         class _Serial_Mode:
-            ValueType = _typing.NewType("ValueType", _builtins.int)
-            V: _TypeAlias = ValueType  # noqa: Y015
+            ValueType = typing.NewType("ValueType", builtins.int)
+            V: typing_extensions.TypeAlias = ValueType
 
-        class _Serial_ModeEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[ModuleConfig.SerialConfig._Serial_Mode.ValueType], _builtins.type):
-            DESCRIPTOR: _descriptor.EnumDescriptor
+        class _Serial_ModeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ModuleConfig.SerialConfig._Serial_Mode.ValueType], builtins.type):
+            DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
             DEFAULT: ModuleConfig.SerialConfig._Serial_Mode.ValueType  # 0
             SIMPLE: ModuleConfig.SerialConfig._Serial_Mode.ValueType  # 1
             PROTO: ModuleConfig.SerialConfig._Serial_Mode.ValueType  # 2
@@ -750,27 +704,27 @@ class ModuleConfig(_message.Message):
         LOGTEXT: ModuleConfig.SerialConfig.Serial_Mode.ValueType  # 10
         """only text (channel & DM)"""
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        ECHO_FIELD_NUMBER: _builtins.int
-        RXD_FIELD_NUMBER: _builtins.int
-        TXD_FIELD_NUMBER: _builtins.int
-        BAUD_FIELD_NUMBER: _builtins.int
-        TIMEOUT_FIELD_NUMBER: _builtins.int
-        MODE_FIELD_NUMBER: _builtins.int
-        OVERRIDE_CONSOLE_SERIAL_PORT_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        ECHO_FIELD_NUMBER: builtins.int
+        RXD_FIELD_NUMBER: builtins.int
+        TXD_FIELD_NUMBER: builtins.int
+        BAUD_FIELD_NUMBER: builtins.int
+        TIMEOUT_FIELD_NUMBER: builtins.int
+        MODE_FIELD_NUMBER: builtins.int
+        OVERRIDE_CONSOLE_SERIAL_PORT_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         Preferences for the SerialModule
         """
-        echo: _builtins.bool
+        echo: builtins.bool
         """
         TODO: REPLACE
         """
-        rxd: _builtins.int
+        rxd: builtins.int
         """
         RX pin (should match Arduino gpio pin number)
         """
-        txd: _builtins.int
+        txd: builtins.int
         """
         TX pin (should match Arduino gpio pin number)
         """
@@ -778,7 +732,7 @@ class ModuleConfig(_message.Message):
         """
         Serial baud rate
         """
-        timeout: _builtins.int
+        timeout: builtins.int
         """
         TODO: REPLACE
         """
@@ -786,7 +740,7 @@ class ModuleConfig(_message.Message):
         """
         Mode for serial module operation
         """
-        override_console_serial_port: _builtins.bool
+        override_console_serial_port: builtins.bool
         """
         Overrides the platform's defacto Serial port instance to use with Serial module config settings
         This is currently only usable in output modes like NMEA / CalTopo and may behave strangely or not work at all in other modes
@@ -795,111 +749,107 @@ class ModuleConfig(_message.Message):
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            echo: _builtins.bool = ...,
-            rxd: _builtins.int = ...,
-            txd: _builtins.int = ...,
+            enabled: builtins.bool = ...,
+            echo: builtins.bool = ...,
+            rxd: builtins.int = ...,
+            txd: builtins.int = ...,
             baud: Global___ModuleConfig.SerialConfig.Serial_Baud.ValueType = ...,
-            timeout: _builtins.int = ...,
+            timeout: builtins.int = ...,
             mode: Global___ModuleConfig.SerialConfig.Serial_Mode.ValueType = ...,
-            override_console_serial_port: _builtins.bool = ...,
+            override_console_serial_port: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["baud", b"baud", "echo", b"echo", "enabled", b"enabled", "mode", b"mode", "override_console_serial_port", b"override_console_serial_port", "rxd", b"rxd", "timeout", b"timeout", "txd", b"txd"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["baud", b"baud", "echo", b"echo", "enabled", b"enabled", "mode", b"mode", "override_console_serial_port", b"override_console_serial_port", "rxd", b"rxd", "timeout", b"timeout", "txd", b"txd"]) -> None: ...
 
-    @_typing.final
-    class ExternalNotificationConfig(_message.Message):
+    @typing.final
+    class ExternalNotificationConfig(google.protobuf.message.Message):
         """
         External Notifications Config
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        OUTPUT_MS_FIELD_NUMBER: _builtins.int
-        OUTPUT_FIELD_NUMBER: _builtins.int
-        OUTPUT_VIBRA_FIELD_NUMBER: _builtins.int
-        OUTPUT_BUZZER_FIELD_NUMBER: _builtins.int
-        ACTIVE_FIELD_NUMBER: _builtins.int
-        ALERT_MESSAGE_FIELD_NUMBER: _builtins.int
-        ALERT_MESSAGE_VIBRA_FIELD_NUMBER: _builtins.int
-        ALERT_MESSAGE_BUZZER_FIELD_NUMBER: _builtins.int
-        ALERT_BELL_FIELD_NUMBER: _builtins.int
-        ALERT_BELL_VIBRA_FIELD_NUMBER: _builtins.int
-        ALERT_BELL_BUZZER_FIELD_NUMBER: _builtins.int
-        USE_PWM_FIELD_NUMBER: _builtins.int
-        NAG_TIMEOUT_FIELD_NUMBER: _builtins.int
-        USE_I2S_AS_BUZZER_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        OUTPUT_MS_FIELD_NUMBER: builtins.int
+        OUTPUT_FIELD_NUMBER: builtins.int
+        OUTPUT_VIBRA_FIELD_NUMBER: builtins.int
+        OUTPUT_BUZZER_FIELD_NUMBER: builtins.int
+        ACTIVE_FIELD_NUMBER: builtins.int
+        ALERT_MESSAGE_FIELD_NUMBER: builtins.int
+        ALERT_MESSAGE_VIBRA_FIELD_NUMBER: builtins.int
+        ALERT_MESSAGE_BUZZER_FIELD_NUMBER: builtins.int
+        ALERT_BELL_FIELD_NUMBER: builtins.int
+        ALERT_BELL_VIBRA_FIELD_NUMBER: builtins.int
+        ALERT_BELL_BUZZER_FIELD_NUMBER: builtins.int
+        USE_PWM_FIELD_NUMBER: builtins.int
+        NAG_TIMEOUT_FIELD_NUMBER: builtins.int
+        USE_I2S_AS_BUZZER_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         Enable the ExternalNotificationModule
         """
-        output_ms: _builtins.int
+        output_ms: builtins.int
         """
         When using in On/Off mode, keep the output on for this many
         milliseconds. Default 1000ms (1 second).
         """
-        output: _builtins.int
+        output: builtins.int
         """
         Define the output pin GPIO setting Defaults to
         EXT_NOTIFY_OUT if set for the board.
         In standalone devices this pin should drive the LED to match the UI.
         """
-        output_vibra: _builtins.int
+        output_vibra: builtins.int
         """
         Optional: Define a secondary output pin for a vibra motor
         This is used in standalone devices to match the UI.
         """
-        output_buzzer: _builtins.int
+        output_buzzer: builtins.int
         """
         Optional: Define a tertiary output pin for an active buzzer
         This is used in standalone devices to to match the UI.
         """
-        active: _builtins.bool
+        active: builtins.bool
         """
         IF this is true, the 'output' Pin will be pulled active high, false
         means active low.
         """
-        alert_message: _builtins.bool
+        alert_message: builtins.bool
         """
         True: Alert when a text message arrives (output)
         """
-        alert_message_vibra: _builtins.bool
+        alert_message_vibra: builtins.bool
         """
         True: Alert when a text message arrives (output_vibra)
         """
-        alert_message_buzzer: _builtins.bool
+        alert_message_buzzer: builtins.bool
         """
         True: Alert when a text message arrives (output_buzzer)
         """
-        alert_bell: _builtins.bool
+        alert_bell: builtins.bool
         """
         True: Alert when the bell character is received (output)
         """
-        alert_bell_vibra: _builtins.bool
+        alert_bell_vibra: builtins.bool
         """
         True: Alert when the bell character is received (output_vibra)
         """
-        alert_bell_buzzer: _builtins.bool
+        alert_bell_buzzer: builtins.bool
         """
         True: Alert when the bell character is received (output_buzzer)
         """
-        use_pwm: _builtins.bool
+        use_pwm: builtins.bool
         """
         use a PWM output instead of a simple on/off output. This will ignore
         the 'output', 'output_ms' and 'active' settings and use the
         device.buzzer_gpio instead.
         """
-        nag_timeout: _builtins.int
+        nag_timeout: builtins.int
         """
         The notification will toggle with 'output_ms' for this time of seconds.
         Default is 0 which means don't repeat at all. 60 would mean blink
         and/or beep for 60 seconds
         """
-        use_i2s_as_buzzer: _builtins.bool
+        use_i2s_as_buzzer: builtins.bool
         """
         When true, enables devices with native I2S audio output to use the RTTTL over speaker like a buzzer
         T-Watch S3 and T-Deck for example have this capability
@@ -907,108 +857,100 @@ class ModuleConfig(_message.Message):
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            output_ms: _builtins.int = ...,
-            output: _builtins.int = ...,
-            output_vibra: _builtins.int = ...,
-            output_buzzer: _builtins.int = ...,
-            active: _builtins.bool = ...,
-            alert_message: _builtins.bool = ...,
-            alert_message_vibra: _builtins.bool = ...,
-            alert_message_buzzer: _builtins.bool = ...,
-            alert_bell: _builtins.bool = ...,
-            alert_bell_vibra: _builtins.bool = ...,
-            alert_bell_buzzer: _builtins.bool = ...,
-            use_pwm: _builtins.bool = ...,
-            nag_timeout: _builtins.int = ...,
-            use_i2s_as_buzzer: _builtins.bool = ...,
+            enabled: builtins.bool = ...,
+            output_ms: builtins.int = ...,
+            output: builtins.int = ...,
+            output_vibra: builtins.int = ...,
+            output_buzzer: builtins.int = ...,
+            active: builtins.bool = ...,
+            alert_message: builtins.bool = ...,
+            alert_message_vibra: builtins.bool = ...,
+            alert_message_buzzer: builtins.bool = ...,
+            alert_bell: builtins.bool = ...,
+            alert_bell_vibra: builtins.bool = ...,
+            alert_bell_buzzer: builtins.bool = ...,
+            use_pwm: builtins.bool = ...,
+            nag_timeout: builtins.int = ...,
+            use_i2s_as_buzzer: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["active", b"active", "alert_bell", b"alert_bell", "alert_bell_buzzer", b"alert_bell_buzzer", "alert_bell_vibra", b"alert_bell_vibra", "alert_message", b"alert_message", "alert_message_buzzer", b"alert_message_buzzer", "alert_message_vibra", b"alert_message_vibra", "enabled", b"enabled", "nag_timeout", b"nag_timeout", "output", b"output", "output_buzzer", b"output_buzzer", "output_ms", b"output_ms", "output_vibra", b"output_vibra", "use_i2s_as_buzzer", b"use_i2s_as_buzzer", "use_pwm", b"use_pwm"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["active", b"active", "alert_bell", b"alert_bell", "alert_bell_buzzer", b"alert_bell_buzzer", "alert_bell_vibra", b"alert_bell_vibra", "alert_message", b"alert_message", "alert_message_buzzer", b"alert_message_buzzer", "alert_message_vibra", b"alert_message_vibra", "enabled", b"enabled", "nag_timeout", b"nag_timeout", "output", b"output", "output_buzzer", b"output_buzzer", "output_ms", b"output_ms", "output_vibra", b"output_vibra", "use_i2s_as_buzzer", b"use_i2s_as_buzzer", "use_pwm", b"use_pwm"]) -> None: ...
 
-    @_typing.final
-    class StoreForwardConfig(_message.Message):
+    @typing.final
+    class StoreForwardConfig(google.protobuf.message.Message):
         """
         Store and Forward Module Config
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        HEARTBEAT_FIELD_NUMBER: _builtins.int
-        RECORDS_FIELD_NUMBER: _builtins.int
-        HISTORY_RETURN_MAX_FIELD_NUMBER: _builtins.int
-        HISTORY_RETURN_WINDOW_FIELD_NUMBER: _builtins.int
-        IS_SERVER_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        HEARTBEAT_FIELD_NUMBER: builtins.int
+        RECORDS_FIELD_NUMBER: builtins.int
+        HISTORY_RETURN_MAX_FIELD_NUMBER: builtins.int
+        HISTORY_RETURN_WINDOW_FIELD_NUMBER: builtins.int
+        IS_SERVER_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         Enable the Store and Forward Module
         """
-        heartbeat: _builtins.bool
+        heartbeat: builtins.bool
         """
         TODO: REPLACE
         """
-        records: _builtins.int
+        records: builtins.int
         """
         TODO: REPLACE
         """
-        history_return_max: _builtins.int
+        history_return_max: builtins.int
         """
         TODO: REPLACE
         """
-        history_return_window: _builtins.int
+        history_return_window: builtins.int
         """
         TODO: REPLACE
         """
-        is_server: _builtins.bool
+        is_server: builtins.bool
         """
         Set to true to let this node act as a server that stores received messages and resends them upon request.
         """
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            heartbeat: _builtins.bool = ...,
-            records: _builtins.int = ...,
-            history_return_max: _builtins.int = ...,
-            history_return_window: _builtins.int = ...,
-            is_server: _builtins.bool = ...,
+            enabled: builtins.bool = ...,
+            heartbeat: builtins.bool = ...,
+            records: builtins.int = ...,
+            history_return_max: builtins.int = ...,
+            history_return_window: builtins.int = ...,
+            is_server: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["enabled", b"enabled", "heartbeat", b"heartbeat", "history_return_max", b"history_return_max", "history_return_window", b"history_return_window", "is_server", b"is_server", "records", b"records"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["enabled", b"enabled", "heartbeat", b"heartbeat", "history_return_max", b"history_return_max", "history_return_window", b"history_return_window", "is_server", b"is_server", "records", b"records"]) -> None: ...
 
-    @_typing.final
-    class RangeTestConfig(_message.Message):
+    @typing.final
+    class RangeTestConfig(google.protobuf.message.Message):
         """
         Preferences for the RangeTestModule
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        ENABLED_FIELD_NUMBER: _builtins.int
-        SENDER_FIELD_NUMBER: _builtins.int
-        SAVE_FIELD_NUMBER: _builtins.int
-        CLEAR_ON_REBOOT_FIELD_NUMBER: _builtins.int
-        enabled: _builtins.bool
+        ENABLED_FIELD_NUMBER: builtins.int
+        SENDER_FIELD_NUMBER: builtins.int
+        SAVE_FIELD_NUMBER: builtins.int
+        CLEAR_ON_REBOOT_FIELD_NUMBER: builtins.int
+        enabled: builtins.bool
         """
         Enable the Range Test Module
         """
-        sender: _builtins.int
+        sender: builtins.int
         """
         Send out range test messages from this node
         """
-        save: _builtins.bool
+        save: builtins.bool
         """
         Bool value indicating that this node should save a RangeTest.csv file.
         ESP32 Only
         """
-        clear_on_reboot: _builtins.bool
+        clear_on_reboot: builtins.bool
         """
         Bool indicating that the node should cleanup / destroy it's RangeTest.csv file.
         ESP32 Only
@@ -1016,148 +958,140 @@ class ModuleConfig(_message.Message):
         def __init__(
             self,
             *,
-            enabled: _builtins.bool = ...,
-            sender: _builtins.int = ...,
-            save: _builtins.bool = ...,
-            clear_on_reboot: _builtins.bool = ...,
+            enabled: builtins.bool = ...,
+            sender: builtins.int = ...,
+            save: builtins.bool = ...,
+            clear_on_reboot: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["clear_on_reboot", b"clear_on_reboot", "enabled", b"enabled", "save", b"save", "sender", b"sender"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["clear_on_reboot", b"clear_on_reboot", "enabled", b"enabled", "save", b"save", "sender", b"sender"]) -> None: ...
 
-    @_typing.final
-    class TelemetryConfig(_message.Message):
+    @typing.final
+    class TelemetryConfig(google.protobuf.message.Message):
         """
         Configuration for both device and environment metrics
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        DEVICE_UPDATE_INTERVAL_FIELD_NUMBER: _builtins.int
-        ENVIRONMENT_UPDATE_INTERVAL_FIELD_NUMBER: _builtins.int
-        ENVIRONMENT_MEASUREMENT_ENABLED_FIELD_NUMBER: _builtins.int
-        ENVIRONMENT_SCREEN_ENABLED_FIELD_NUMBER: _builtins.int
-        ENVIRONMENT_DISPLAY_FAHRENHEIT_FIELD_NUMBER: _builtins.int
-        AIR_QUALITY_ENABLED_FIELD_NUMBER: _builtins.int
-        AIR_QUALITY_INTERVAL_FIELD_NUMBER: _builtins.int
-        POWER_MEASUREMENT_ENABLED_FIELD_NUMBER: _builtins.int
-        POWER_UPDATE_INTERVAL_FIELD_NUMBER: _builtins.int
-        POWER_SCREEN_ENABLED_FIELD_NUMBER: _builtins.int
-        HEALTH_MEASUREMENT_ENABLED_FIELD_NUMBER: _builtins.int
-        HEALTH_UPDATE_INTERVAL_FIELD_NUMBER: _builtins.int
-        HEALTH_SCREEN_ENABLED_FIELD_NUMBER: _builtins.int
-        DEVICE_TELEMETRY_ENABLED_FIELD_NUMBER: _builtins.int
-        AIR_QUALITY_SCREEN_ENABLED_FIELD_NUMBER: _builtins.int
-        device_update_interval: _builtins.int
+        DEVICE_UPDATE_INTERVAL_FIELD_NUMBER: builtins.int
+        ENVIRONMENT_UPDATE_INTERVAL_FIELD_NUMBER: builtins.int
+        ENVIRONMENT_MEASUREMENT_ENABLED_FIELD_NUMBER: builtins.int
+        ENVIRONMENT_SCREEN_ENABLED_FIELD_NUMBER: builtins.int
+        ENVIRONMENT_DISPLAY_FAHRENHEIT_FIELD_NUMBER: builtins.int
+        AIR_QUALITY_ENABLED_FIELD_NUMBER: builtins.int
+        AIR_QUALITY_INTERVAL_FIELD_NUMBER: builtins.int
+        POWER_MEASUREMENT_ENABLED_FIELD_NUMBER: builtins.int
+        POWER_UPDATE_INTERVAL_FIELD_NUMBER: builtins.int
+        POWER_SCREEN_ENABLED_FIELD_NUMBER: builtins.int
+        HEALTH_MEASUREMENT_ENABLED_FIELD_NUMBER: builtins.int
+        HEALTH_UPDATE_INTERVAL_FIELD_NUMBER: builtins.int
+        HEALTH_SCREEN_ENABLED_FIELD_NUMBER: builtins.int
+        DEVICE_TELEMETRY_ENABLED_FIELD_NUMBER: builtins.int
+        AIR_QUALITY_SCREEN_ENABLED_FIELD_NUMBER: builtins.int
+        device_update_interval: builtins.int
         """
         Interval in seconds of how often we should try to send our
         device metrics to the mesh
         """
-        environment_update_interval: _builtins.int
+        environment_update_interval: builtins.int
         """
         Interval in seconds of how often we should try to send our
         environment measurements to the mesh
         """
-        environment_measurement_enabled: _builtins.bool
+        environment_measurement_enabled: builtins.bool
         """
         Preferences for the Telemetry Module (Environment)
         Enable/Disable the telemetry measurement module measurement collection
         """
-        environment_screen_enabled: _builtins.bool
+        environment_screen_enabled: builtins.bool
         """
         Enable/Disable the telemetry measurement module on-device display
         """
-        environment_display_fahrenheit: _builtins.bool
+        environment_display_fahrenheit: builtins.bool
         """
         We'll always read the sensor in Celsius, but sometimes we might want to
         display the results in Fahrenheit as a "user preference".
         """
-        air_quality_enabled: _builtins.bool
+        air_quality_enabled: builtins.bool
         """
         Enable/Disable the air quality metrics
         """
-        air_quality_interval: _builtins.int
+        air_quality_interval: builtins.int
         """
         Interval in seconds of how often we should try to send our
         air quality metrics to the mesh
         """
-        power_measurement_enabled: _builtins.bool
+        power_measurement_enabled: builtins.bool
         """
         Enable/disable Power metrics
         """
-        power_update_interval: _builtins.int
+        power_update_interval: builtins.int
         """
         Interval in seconds of how often we should try to send our
         power metrics to the mesh
         """
-        power_screen_enabled: _builtins.bool
+        power_screen_enabled: builtins.bool
         """
         Enable/Disable the power measurement module on-device display
         """
-        health_measurement_enabled: _builtins.bool
+        health_measurement_enabled: builtins.bool
         """
         Preferences for the (Health) Telemetry Module
         Enable/Disable the telemetry measurement module measurement collection
         """
-        health_update_interval: _builtins.int
+        health_update_interval: builtins.int
         """
         Interval in seconds of how often we should try to send our
         health metrics to the mesh
         """
-        health_screen_enabled: _builtins.bool
+        health_screen_enabled: builtins.bool
         """
         Enable/Disable the health telemetry module on-device display
         """
-        device_telemetry_enabled: _builtins.bool
+        device_telemetry_enabled: builtins.bool
         """
         Enable/Disable the device telemetry module to send metrics to the mesh
         Note: We will still send telemtry to the connected phone / client every minute over the API
         """
-        air_quality_screen_enabled: _builtins.bool
+        air_quality_screen_enabled: builtins.bool
         """
         Enable/Disable the air quality telemetry measurement module on-device display
         """
         def __init__(
             self,
             *,
-            device_update_interval: _builtins.int = ...,
-            environment_update_interval: _builtins.int = ...,
-            environment_measurement_enabled: _builtins.bool = ...,
-            environment_screen_enabled: _builtins.bool = ...,
-            environment_display_fahrenheit: _builtins.bool = ...,
-            air_quality_enabled: _builtins.bool = ...,
-            air_quality_interval: _builtins.int = ...,
-            power_measurement_enabled: _builtins.bool = ...,
-            power_update_interval: _builtins.int = ...,
-            power_screen_enabled: _builtins.bool = ...,
-            health_measurement_enabled: _builtins.bool = ...,
-            health_update_interval: _builtins.int = ...,
-            health_screen_enabled: _builtins.bool = ...,
-            device_telemetry_enabled: _builtins.bool = ...,
-            air_quality_screen_enabled: _builtins.bool = ...,
+            device_update_interval: builtins.int = ...,
+            environment_update_interval: builtins.int = ...,
+            environment_measurement_enabled: builtins.bool = ...,
+            environment_screen_enabled: builtins.bool = ...,
+            environment_display_fahrenheit: builtins.bool = ...,
+            air_quality_enabled: builtins.bool = ...,
+            air_quality_interval: builtins.int = ...,
+            power_measurement_enabled: builtins.bool = ...,
+            power_update_interval: builtins.int = ...,
+            power_screen_enabled: builtins.bool = ...,
+            health_measurement_enabled: builtins.bool = ...,
+            health_update_interval: builtins.int = ...,
+            health_screen_enabled: builtins.bool = ...,
+            device_telemetry_enabled: builtins.bool = ...,
+            air_quality_screen_enabled: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["air_quality_enabled", b"air_quality_enabled", "air_quality_interval", b"air_quality_interval", "air_quality_screen_enabled", b"air_quality_screen_enabled", "device_telemetry_enabled", b"device_telemetry_enabled", "device_update_interval", b"device_update_interval", "environment_display_fahrenheit", b"environment_display_fahrenheit", "environment_measurement_enabled", b"environment_measurement_enabled", "environment_screen_enabled", b"environment_screen_enabled", "environment_update_interval", b"environment_update_interval", "health_measurement_enabled", b"health_measurement_enabled", "health_screen_enabled", b"health_screen_enabled", "health_update_interval", b"health_update_interval", "power_measurement_enabled", b"power_measurement_enabled", "power_screen_enabled", b"power_screen_enabled", "power_update_interval", b"power_update_interval"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["air_quality_enabled", b"air_quality_enabled", "air_quality_interval", b"air_quality_interval", "air_quality_screen_enabled", b"air_quality_screen_enabled", "device_telemetry_enabled", b"device_telemetry_enabled", "device_update_interval", b"device_update_interval", "environment_display_fahrenheit", b"environment_display_fahrenheit", "environment_measurement_enabled", b"environment_measurement_enabled", "environment_screen_enabled", b"environment_screen_enabled", "environment_update_interval", b"environment_update_interval", "health_measurement_enabled", b"health_measurement_enabled", "health_screen_enabled", b"health_screen_enabled", "health_update_interval", b"health_update_interval", "power_measurement_enabled", b"power_measurement_enabled", "power_screen_enabled", b"power_screen_enabled", "power_update_interval", b"power_update_interval"]) -> None: ...
 
-    @_typing.final
-    class CannedMessageConfig(_message.Message):
+    @typing.final
+    class CannedMessageConfig(google.protobuf.message.Message):
         """
         Canned Messages Module Config
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
         class _InputEventChar:
-            ValueType = _typing.NewType("ValueType", _builtins.int)
-            V: _TypeAlias = ValueType  # noqa: Y015
+            ValueType = typing.NewType("ValueType", builtins.int)
+            V: typing_extensions.TypeAlias = ValueType
 
-        class _InputEventCharEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[ModuleConfig.CannedMessageConfig._InputEventChar.ValueType], _builtins.type):
-            DESCRIPTOR: _descriptor.EnumDescriptor
+        class _InputEventCharEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ModuleConfig.CannedMessageConfig._InputEventChar.ValueType], builtins.type):
+            DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
             NONE: ModuleConfig.CannedMessageConfig._InputEventChar.ValueType  # 0
             """
             TODO: REPLACE
@@ -1229,30 +1163,30 @@ class ModuleConfig(_message.Message):
         TODO: REPLACE
         """
 
-        ROTARY1_ENABLED_FIELD_NUMBER: _builtins.int
-        INPUTBROKER_PIN_A_FIELD_NUMBER: _builtins.int
-        INPUTBROKER_PIN_B_FIELD_NUMBER: _builtins.int
-        INPUTBROKER_PIN_PRESS_FIELD_NUMBER: _builtins.int
-        INPUTBROKER_EVENT_CW_FIELD_NUMBER: _builtins.int
-        INPUTBROKER_EVENT_CCW_FIELD_NUMBER: _builtins.int
-        INPUTBROKER_EVENT_PRESS_FIELD_NUMBER: _builtins.int
-        UPDOWN1_ENABLED_FIELD_NUMBER: _builtins.int
-        ENABLED_FIELD_NUMBER: _builtins.int
-        ALLOW_INPUT_SOURCE_FIELD_NUMBER: _builtins.int
-        SEND_BELL_FIELD_NUMBER: _builtins.int
-        rotary1_enabled: _builtins.bool
+        ROTARY1_ENABLED_FIELD_NUMBER: builtins.int
+        INPUTBROKER_PIN_A_FIELD_NUMBER: builtins.int
+        INPUTBROKER_PIN_B_FIELD_NUMBER: builtins.int
+        INPUTBROKER_PIN_PRESS_FIELD_NUMBER: builtins.int
+        INPUTBROKER_EVENT_CW_FIELD_NUMBER: builtins.int
+        INPUTBROKER_EVENT_CCW_FIELD_NUMBER: builtins.int
+        INPUTBROKER_EVENT_PRESS_FIELD_NUMBER: builtins.int
+        UPDOWN1_ENABLED_FIELD_NUMBER: builtins.int
+        ENABLED_FIELD_NUMBER: builtins.int
+        ALLOW_INPUT_SOURCE_FIELD_NUMBER: builtins.int
+        SEND_BELL_FIELD_NUMBER: builtins.int
+        rotary1_enabled: builtins.bool
         """
         Enable the rotary encoder #1. This is a 'dumb' encoder sending pulses on both A and B pins while rotating.
         """
-        inputbroker_pin_a: _builtins.int
+        inputbroker_pin_a: builtins.int
         """
         GPIO pin for rotary encoder A port.
         """
-        inputbroker_pin_b: _builtins.int
+        inputbroker_pin_b: builtins.int
         """
         GPIO pin for rotary encoder B port.
         """
-        inputbroker_pin_press: _builtins.int
+        inputbroker_pin_press: builtins.int
         """
         GPIO pin for rotary encoder Press port.
         """
@@ -1268,41 +1202,20 @@ class ModuleConfig(_message.Message):
         """
         Generate input event on Press of this kind.
         """
-        updown1_enabled: _builtins.bool
+        updown1_enabled: builtins.bool
         """
         Enable the Up/Down/Select input device. Can be RAK rotary encoder or 3 buttons. Uses the a/b/press definitions from inputbroker.
         """
-        @_builtins.property
-        @_deprecated("""This field has been marked as deprecated using proto field options.""")
-        def enabled(self) -> _builtins.bool:
-            """
-            Enable/disable CannedMessageModule.
-            """
-
-        @enabled.setter
-        @_deprecated("""This field has been marked as deprecated using proto field options.""")
-        def enabled(self, value: _builtins.bool) -> None:
-            """
-            Enable/disable CannedMessageModule.
-            """
-
-        @_builtins.property
-        @_deprecated("""This field has been marked as deprecated using proto field options.""")
-        def allow_input_source(self) -> _builtins.str:
-            """
-            Input event origin accepted by the canned message module.
-            Can be e.g. "rotEnc1", "upDownEnc1", "scanAndSelect", "cardkb", "serialkb", or keyword "_any"
-            """
-
-        @allow_input_source.setter
-        @_deprecated("""This field has been marked as deprecated using proto field options.""")
-        def allow_input_source(self, value: _builtins.str) -> None:
-            """
-            Input event origin accepted by the canned message module.
-            Can be e.g. "rotEnc1", "upDownEnc1", "scanAndSelect", "cardkb", "serialkb", or keyword "_any"
-            """
-
-        send_bell: _builtins.bool
+        enabled: builtins.bool
+        """
+        Enable/disable CannedMessageModule.
+        """
+        allow_input_source: builtins.str
+        """
+        Input event origin accepted by the canned message module.
+        Can be e.g. "rotEnc1", "upDownEnc1", "scanAndSelect", "cardkb", "serialkb", or keyword "_any"
+        """
+        send_bell: builtins.bool
         """
         CannedMessageModule also sends a bell character with the messages.
         ExternalNotificationModule can benefit from this feature.
@@ -1310,113 +1223,101 @@ class ModuleConfig(_message.Message):
         def __init__(
             self,
             *,
-            rotary1_enabled: _builtins.bool = ...,
-            inputbroker_pin_a: _builtins.int = ...,
-            inputbroker_pin_b: _builtins.int = ...,
-            inputbroker_pin_press: _builtins.int = ...,
+            rotary1_enabled: builtins.bool = ...,
+            inputbroker_pin_a: builtins.int = ...,
+            inputbroker_pin_b: builtins.int = ...,
+            inputbroker_pin_press: builtins.int = ...,
             inputbroker_event_cw: Global___ModuleConfig.CannedMessageConfig.InputEventChar.ValueType = ...,
             inputbroker_event_ccw: Global___ModuleConfig.CannedMessageConfig.InputEventChar.ValueType = ...,
             inputbroker_event_press: Global___ModuleConfig.CannedMessageConfig.InputEventChar.ValueType = ...,
-            updown1_enabled: _builtins.bool = ...,
-            enabled: _builtins.bool = ...,
-            allow_input_source: _builtins.str = ...,
-            send_bell: _builtins.bool = ...,
+            updown1_enabled: builtins.bool = ...,
+            enabled: builtins.bool = ...,
+            allow_input_source: builtins.str = ...,
+            send_bell: builtins.bool = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["allow_input_source", b"allow_input_source", "enabled", b"enabled", "inputbroker_event_ccw", b"inputbroker_event_ccw", "inputbroker_event_cw", b"inputbroker_event_cw", "inputbroker_event_press", b"inputbroker_event_press", "inputbroker_pin_a", b"inputbroker_pin_a", "inputbroker_pin_b", b"inputbroker_pin_b", "inputbroker_pin_press", b"inputbroker_pin_press", "rotary1_enabled", b"rotary1_enabled", "send_bell", b"send_bell", "updown1_enabled", b"updown1_enabled"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["allow_input_source", b"allow_input_source", "enabled", b"enabled", "inputbroker_event_ccw", b"inputbroker_event_ccw", "inputbroker_event_cw", b"inputbroker_event_cw", "inputbroker_event_press", b"inputbroker_event_press", "inputbroker_pin_a", b"inputbroker_pin_a", "inputbroker_pin_b", b"inputbroker_pin_b", "inputbroker_pin_press", b"inputbroker_pin_press", "rotary1_enabled", b"rotary1_enabled", "send_bell", b"send_bell", "updown1_enabled", b"updown1_enabled"]) -> None: ...
 
-    @_typing.final
-    class AmbientLightingConfig(_message.Message):
+    @typing.final
+    class AmbientLightingConfig(google.protobuf.message.Message):
         """
         Ambient Lighting Module - Settings for control of onboard LEDs to allow users to adjust the brightness levels and respective color levels.
         Initially created for the RAK14001 RGB LED module.
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        LED_STATE_FIELD_NUMBER: _builtins.int
-        CURRENT_FIELD_NUMBER: _builtins.int
-        RED_FIELD_NUMBER: _builtins.int
-        GREEN_FIELD_NUMBER: _builtins.int
-        BLUE_FIELD_NUMBER: _builtins.int
-        led_state: _builtins.bool
+        LED_STATE_FIELD_NUMBER: builtins.int
+        CURRENT_FIELD_NUMBER: builtins.int
+        RED_FIELD_NUMBER: builtins.int
+        GREEN_FIELD_NUMBER: builtins.int
+        BLUE_FIELD_NUMBER: builtins.int
+        led_state: builtins.bool
         """
         Sets LED to on or off.
         """
-        current: _builtins.int
+        current: builtins.int
         """
         Sets the current for the LED output. Default is 10.
         """
-        red: _builtins.int
+        red: builtins.int
         """
         Sets the red LED level. Values are 0-255.
         """
-        green: _builtins.int
+        green: builtins.int
         """
         Sets the green LED level. Values are 0-255.
         """
-        blue: _builtins.int
+        blue: builtins.int
         """
         Sets the blue LED level. Values are 0-255.
         """
         def __init__(
             self,
             *,
-            led_state: _builtins.bool = ...,
-            current: _builtins.int = ...,
-            red: _builtins.int = ...,
-            green: _builtins.int = ...,
-            blue: _builtins.int = ...,
+            led_state: builtins.bool = ...,
+            current: builtins.int = ...,
+            red: builtins.int = ...,
+            green: builtins.int = ...,
+            blue: builtins.int = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["blue", b"blue", "current", b"current", "green", b"green", "led_state", b"led_state", "red", b"red"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["blue", b"blue", "current", b"current", "green", b"green", "led_state", b"led_state", "red", b"red"]) -> None: ...
 
-    @_typing.final
-    class StatusMessageConfig(_message.Message):
+    @typing.final
+    class StatusMessageConfig(google.protobuf.message.Message):
         """
         StatusMessage config - Allows setting a status message for a node to periodically rebroadcast
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        NODE_STATUS_FIELD_NUMBER: _builtins.int
-        node_status: _builtins.str
+        NODE_STATUS_FIELD_NUMBER: builtins.int
+        node_status: builtins.str
         """
         The actual status string
         """
         def __init__(
             self,
             *,
-            node_status: _builtins.str = ...,
+            node_status: builtins.str = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["node_status", b"node_status"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["node_status", b"node_status"]) -> None: ...
 
-    @_typing.final
-    class TAKConfig(_message.Message):
+    @typing.final
+    class TAKConfig(google.protobuf.message.Message):
         """
         TAK team/role configuration
         """
 
-        DESCRIPTOR: _descriptor.Descriptor
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-        TEAM_FIELD_NUMBER: _builtins.int
-        ROLE_FIELD_NUMBER: _builtins.int
-        team: _atak_pb2.Team.ValueType
+        TEAM_FIELD_NUMBER: builtins.int
+        ROLE_FIELD_NUMBER: builtins.int
+        team: atak_pb2.Team.ValueType
         """
         Team color.
         Default Unspecifed_Color -> firmware uses Cyan
         """
-        role: _atak_pb2.MemberRole.ValueType
+        role: atak_pb2.MemberRole.ValueType
         """
         Member role.
         Default Unspecifed -> firmware uses TeamMember
@@ -1424,122 +1325,118 @@ class ModuleConfig(_message.Message):
         def __init__(
             self,
             *,
-            team: _atak_pb2.Team.ValueType = ...,
-            role: _atak_pb2.MemberRole.ValueType = ...,
+            team: atak_pb2.Team.ValueType = ...,
+            role: atak_pb2.MemberRole.ValueType = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["role", b"role", "team", b"team"]  # noqa: Y015
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        def WhichOneof(self, oneof_group: _Never) -> None: ...
+        def ClearField(self, field_name: typing.Literal["role", b"role", "team", b"team"]) -> None: ...
 
-    MQTT_FIELD_NUMBER: _builtins.int
-    SERIAL_FIELD_NUMBER: _builtins.int
-    EXTERNAL_NOTIFICATION_FIELD_NUMBER: _builtins.int
-    STORE_FORWARD_FIELD_NUMBER: _builtins.int
-    RANGE_TEST_FIELD_NUMBER: _builtins.int
-    TELEMETRY_FIELD_NUMBER: _builtins.int
-    CANNED_MESSAGE_FIELD_NUMBER: _builtins.int
-    AUDIO_FIELD_NUMBER: _builtins.int
-    REMOTE_HARDWARE_FIELD_NUMBER: _builtins.int
-    NEIGHBOR_INFO_FIELD_NUMBER: _builtins.int
-    AMBIENT_LIGHTING_FIELD_NUMBER: _builtins.int
-    DETECTION_SENSOR_FIELD_NUMBER: _builtins.int
-    PAXCOUNTER_FIELD_NUMBER: _builtins.int
-    STATUSMESSAGE_FIELD_NUMBER: _builtins.int
-    TRAFFIC_MANAGEMENT_FIELD_NUMBER: _builtins.int
-    TAK_FIELD_NUMBER: _builtins.int
-    @_builtins.property
+    MQTT_FIELD_NUMBER: builtins.int
+    SERIAL_FIELD_NUMBER: builtins.int
+    EXTERNAL_NOTIFICATION_FIELD_NUMBER: builtins.int
+    STORE_FORWARD_FIELD_NUMBER: builtins.int
+    RANGE_TEST_FIELD_NUMBER: builtins.int
+    TELEMETRY_FIELD_NUMBER: builtins.int
+    CANNED_MESSAGE_FIELD_NUMBER: builtins.int
+    AUDIO_FIELD_NUMBER: builtins.int
+    REMOTE_HARDWARE_FIELD_NUMBER: builtins.int
+    NEIGHBOR_INFO_FIELD_NUMBER: builtins.int
+    AMBIENT_LIGHTING_FIELD_NUMBER: builtins.int
+    DETECTION_SENSOR_FIELD_NUMBER: builtins.int
+    PAXCOUNTER_FIELD_NUMBER: builtins.int
+    STATUSMESSAGE_FIELD_NUMBER: builtins.int
+    TRAFFIC_MANAGEMENT_FIELD_NUMBER: builtins.int
+    TAK_FIELD_NUMBER: builtins.int
+    @property
     def mqtt(self) -> Global___ModuleConfig.MQTTConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def serial(self) -> Global___ModuleConfig.SerialConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def external_notification(self) -> Global___ModuleConfig.ExternalNotificationConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def store_forward(self) -> Global___ModuleConfig.StoreForwardConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def range_test(self) -> Global___ModuleConfig.RangeTestConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def telemetry(self) -> Global___ModuleConfig.TelemetryConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def canned_message(self) -> Global___ModuleConfig.CannedMessageConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def audio(self) -> Global___ModuleConfig.AudioConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def remote_hardware(self) -> Global___ModuleConfig.RemoteHardwareConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def neighbor_info(self) -> Global___ModuleConfig.NeighborInfoConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def ambient_lighting(self) -> Global___ModuleConfig.AmbientLightingConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def detection_sensor(self) -> Global___ModuleConfig.DetectionSensorConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def paxcounter(self) -> Global___ModuleConfig.PaxcounterConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def statusmessage(self) -> Global___ModuleConfig.StatusMessageConfig:
         """
         TODO: REPLACE
         """
 
-    @_builtins.property
+    @property
     def traffic_management(self) -> Global___ModuleConfig.TrafficManagementConfig:
         """
         Traffic management module config for mesh network optimization
         """
 
-    @_builtins.property
+    @property
     def tak(self) -> Global___ModuleConfig.TAKConfig:
         """
         TAK team/role configuration for TAK_TRACKER
@@ -1565,32 +1462,28 @@ class ModuleConfig(_message.Message):
         traffic_management: Global___ModuleConfig.TrafficManagementConfig | None = ...,
         tak: Global___ModuleConfig.TAKConfig | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["ambient_lighting", b"ambient_lighting", "audio", b"audio", "canned_message", b"canned_message", "detection_sensor", b"detection_sensor", "external_notification", b"external_notification", "mqtt", b"mqtt", "neighbor_info", b"neighbor_info", "paxcounter", b"paxcounter", "payload_variant", b"payload_variant", "range_test", b"range_test", "remote_hardware", b"remote_hardware", "serial", b"serial", "statusmessage", b"statusmessage", "store_forward", b"store_forward", "tak", b"tak", "telemetry", b"telemetry", "traffic_management", b"traffic_management"]  # noqa: Y015
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["ambient_lighting", b"ambient_lighting", "audio", b"audio", "canned_message", b"canned_message", "detection_sensor", b"detection_sensor", "external_notification", b"external_notification", "mqtt", b"mqtt", "neighbor_info", b"neighbor_info", "paxcounter", b"paxcounter", "payload_variant", b"payload_variant", "range_test", b"range_test", "remote_hardware", b"remote_hardware", "serial", b"serial", "statusmessage", b"statusmessage", "store_forward", b"store_forward", "tak", b"tak", "telemetry", b"telemetry", "traffic_management", b"traffic_management"]  # noqa: Y015
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    _WhichOneofReturnType_payload_variant: _TypeAlias = _typing.Literal["mqtt", "serial", "external_notification", "store_forward", "range_test", "telemetry", "canned_message", "audio", "remote_hardware", "neighbor_info", "ambient_lighting", "detection_sensor", "paxcounter", "statusmessage", "traffic_management", "tak"]  # noqa: Y015
-    _WhichOneofArgType_payload_variant: _TypeAlias = _typing.Literal["payload_variant", b"payload_variant"]  # noqa: Y015
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_payload_variant) -> _WhichOneofReturnType_payload_variant | None: ...
+    def HasField(self, field_name: typing.Literal["ambient_lighting", b"ambient_lighting", "audio", b"audio", "canned_message", b"canned_message", "detection_sensor", b"detection_sensor", "external_notification", b"external_notification", "mqtt", b"mqtt", "neighbor_info", b"neighbor_info", "paxcounter", b"paxcounter", "payload_variant", b"payload_variant", "range_test", b"range_test", "remote_hardware", b"remote_hardware", "serial", b"serial", "statusmessage", b"statusmessage", "store_forward", b"store_forward", "tak", b"tak", "telemetry", b"telemetry", "traffic_management", b"traffic_management"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["ambient_lighting", b"ambient_lighting", "audio", b"audio", "canned_message", b"canned_message", "detection_sensor", b"detection_sensor", "external_notification", b"external_notification", "mqtt", b"mqtt", "neighbor_info", b"neighbor_info", "paxcounter", b"paxcounter", "payload_variant", b"payload_variant", "range_test", b"range_test", "remote_hardware", b"remote_hardware", "serial", b"serial", "statusmessage", b"statusmessage", "store_forward", b"store_forward", "tak", b"tak", "telemetry", b"telemetry", "traffic_management", b"traffic_management"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["payload_variant", b"payload_variant"]) -> typing.Literal["mqtt", "serial", "external_notification", "store_forward", "range_test", "telemetry", "canned_message", "audio", "remote_hardware", "neighbor_info", "ambient_lighting", "detection_sensor", "paxcounter", "statusmessage", "traffic_management", "tak"] | None: ...
 
-Global___ModuleConfig: _TypeAlias = ModuleConfig  # noqa: Y015
+Global___ModuleConfig: typing_extensions.TypeAlias = ModuleConfig
 
-@_typing.final
-class RemoteHardwarePin(_message.Message):
+@typing.final
+class RemoteHardwarePin(google.protobuf.message.Message):
     """
     A GPIO pin definition for remote hardware module
     """
 
-    DESCRIPTOR: _descriptor.Descriptor
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-    GPIO_PIN_FIELD_NUMBER: _builtins.int
-    NAME_FIELD_NUMBER: _builtins.int
-    TYPE_FIELD_NUMBER: _builtins.int
-    gpio_pin: _builtins.int
+    GPIO_PIN_FIELD_NUMBER: builtins.int
+    NAME_FIELD_NUMBER: builtins.int
+    TYPE_FIELD_NUMBER: builtins.int
+    gpio_pin: builtins.int
     """
     GPIO Pin number (must match Arduino)
     """
-    name: _builtins.str
+    name: builtins.str
     """
     Name for the GPIO pin (i.e. Front gate, mailbox, etc)
     """
@@ -1601,14 +1494,10 @@ class RemoteHardwarePin(_message.Message):
     def __init__(
         self,
         *,
-        gpio_pin: _builtins.int = ...,
-        name: _builtins.str = ...,
+        gpio_pin: builtins.int = ...,
+        name: builtins.str = ...,
         type: Global___RemoteHardwarePinType.ValueType = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["gpio_pin", b"gpio_pin", "name", b"name", "type", b"type"]  # noqa: Y015
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    def WhichOneof(self, oneof_group: _Never) -> None: ...
+    def ClearField(self, field_name: typing.Literal["gpio_pin", b"gpio_pin", "name", b"name", "type", b"type"]) -> None: ...
 
-Global___RemoteHardwarePin: _TypeAlias = RemoteHardwarePin  # noqa: Y015
+Global___RemoteHardwarePin: typing_extensions.TypeAlias = RemoteHardwarePin

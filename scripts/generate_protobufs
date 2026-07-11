@@ -6,15 +6,26 @@
 # mypy-protobuf provides the --mypy_out plugin).
 #
 # IMPORTANT: the generated *_pb2.py files embed a "gencode" protobuf version
-# (whatever `protobuf` version grpcio-tools pulled in) and refuse to import at
-# runtime against an OLDER `protobuf` package - see
-# https://protobuf.dev/support/cross-version-runtime-guarantee. After running
-# this script, check the "Protobuf Python Version: X.Y.Z" comment near the top
-# of any regenerated *_pb2.py file and make sure
-# custom_components/meshtastic/manifest.json's `protobuf>=X.Y.Z` requirement
-# (and requirements.txt's pin) is at least that version - otherwise HA can
-# resolve an older protobuf release that fails with
-# "google.protobuf.runtime_version.VersionError" on startup.
+# (fixed by whichever grpcio-tools release's bundled protoc binary you used -
+# NOT controlled by the separately pip-installed `protobuf` package version)
+# and refuse to import at runtime against an OLDER `protobuf` package - see
+# https://protobuf.dev/support/cross-version-runtime-guarantee.
+#
+# Home Assistant core pins an EXACT `protobuf` version for the whole install in
+# homeassistant/package_constraints.txt and rejects any custom integration
+# requirement that doesn't satisfy it (RequirementsNotFound) - it will NOT
+# resolve to something newer to satisfy us. So after running this script:
+#   1. Check the "Protobuf Python Version: X.Y.Z" comment near the top of any
+#      regenerated *_pb2.py file (the gencode version).
+#   2. Check the exact `protobuf==A.B.C` pin in the target Home Assistant
+#      version's homeassistant/package_constraints.txt.
+#   3. Confirm A.B.C >= X.Y.Z. If not, you need an OLDER grpcio-tools release
+#      (see requirements.protobuf.txt) whose bundled protoc produces an older
+#      gencode - bumping our own `protobuf` requirement upward does NOT help,
+#      since HA's own pin wins regardless of what we request.
+#   4. Update custom_components/meshtastic/manifest.json's `protobuf>=X.Y.Z`
+#      (matching the gencode floor from step 1) and requirements.txt's exact
+#      pin (matching HA's A.B.C from step 2) accordingly.
 
 set -e
 

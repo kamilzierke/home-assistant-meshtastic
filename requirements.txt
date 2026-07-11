@@ -5,7 +5,14 @@ ruff==0.15.21
 
 bleak==3.0.2
 bleak-retry-connector==4.6.1
-pyserial-asyncio~=0.6
-protobuf>=7.35.0
+pyserial-asyncio-fast==0.16
+# Home Assistant core pins an exact `protobuf` version for the whole install in
+# homeassistant/package_constraints.txt (currently 6.32.0 for 2026.7.2) - custom
+# integration requirements that don't satisfy it are silently rejected
+# (RequirementsNotFound), so this must be kept in lockstep with whatever HA core
+# currently pins, not just manifest.json's `protobuf>=X` floor. See
+# scripts/generate_protobufs for how the generated code's own minimum version
+# is controlled independently of this exact pin.
+protobuf==6.32.0
 
 aiomqtt>=2.5.1
