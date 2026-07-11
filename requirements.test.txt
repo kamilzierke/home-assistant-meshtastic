@@ -1,8 +1,10 @@
 # Strictly for tests
-# pytest-homeassistant-custom-component pins an exact `homeassistant` version;
-# keep it in lockstep with requirements.txt's homeassistant pin.
-coverage==7.15.0
-pytest==9.1.1
+# pytest-homeassistant-custom-component pins exact homeassistant/pytest/
+# coverage/pytest-asyncio/pytest-cov versions per release; these must match
+# its pins exactly or pip's resolver fails. Keep in lockstep with
+# requirements.txt's homeassistant pin.
+coverage==7.14.1
+pytest==9.0.3
 pytest-asyncio==1.4.0
 pytest-cov==7.1.0
 pytest-homeassistant-custom-component==0.13.346
