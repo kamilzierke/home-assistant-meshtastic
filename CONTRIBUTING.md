@@ -56,6 +56,34 @@ Home Assistant instance running and already configured with the included
 [`configuration.yaml`](./config/configuration.yaml)
 file.
 
+## Maintenance scripts
+
+- `scripts/setup` - installs dev dependencies (`requirements.txt`).
+- `scripts/develop` - launches a local Home Assistant instance (via the devcontainer) with this
+  integration loaded from `custom_components/`, configured against `./config`.
+- `scripts/lint` - runs `ruff format` and `ruff check --fix`.
+- `scripts/generate_protobufs <run with no arguments>` - regenerates
+  `custom_components/meshtastic/aiomeshtastic/protobuf/*_pb2.py(i)` from the `protobufs` git
+  submodule. To bump to a newer Meshtastic protobuf schema:
+  1. `cd protobufs && git fetch && git checkout <new tag> && cd ..`
+  2. `pip install -r requirements.protobuf.txt`
+  3. `./scripts/generate_protobufs`
+  4. Check the "Protobuf Python Version: X.Y.Z" comment near the top of any regenerated
+     `*_pb2.py` file, and make sure `custom_components/meshtastic/manifest.json`'s
+     `protobuf>=X.Y.Z` requirement (and `requirements.txt`'s pin) is at least that version -
+     otherwise Home Assistant can resolve an older `protobuf` package that fails to import
+     the generated code at runtime.
+  5. Commit the `protobufs` submodule bump together with the regenerated files (and the
+     manifest bump from step 4, if any).
+- `scripts/update_web_client <tag>` - updates the bundled Meshtastic web client
+  (`custom_components/meshtastic/meshtastic_web/static`) from an official
+  [meshtastic/web release](https://github.com/meshtastic/web/releases), independently of this
+  addon's own release cycle - e.g. `./scripts/update_web_client v2.7.1`. It downloads the
+  release's `build.tar` asset, decompresses it, patches `index.html` to work under the
+  `/meshtastic/web/` sub-path this integration serves it from, and bumps
+  `custom_components/meshtastic/meshtastic_web/version.py`. Review the diff and commit it
+  yourself - the script never touches `manifest.json`/`hacs.json` or commits anything.
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under its MIT License.

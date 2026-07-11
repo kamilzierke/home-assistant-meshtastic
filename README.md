@@ -59,6 +59,16 @@ For more details, see check the [documentation](#documentation).
 
 <!---->
 
+### Removal
+
+1. In the HA UI, go to "Settings" -> "Devices & Services", find the "Meshtastic" integration
+   and remove each configured gateway entry (this disconnects from the device and cleans up
+   its entities/devices).
+2. If installed via HACS: open HACS, find "Meshtastic" and uninstall it.
+   If installed manually: delete the `custom_components/meshtastic` folder from your HA
+   configuration directory.
+3. Restart Home Assistant.
+
 # Documentation
 
 ## Supported Platforms
