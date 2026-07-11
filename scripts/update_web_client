@@ -105,6 +105,16 @@ $SEDCMD 's/(href|src)="\/([^/])/\1="\/meshtastic\/web\/\2/g' "${INDEX_HTML}"
 # not a line-delete (`/pattern/d` would wipe the entire file).
 $SEDCMD 's/<script[^>]*id="vite-plugin-pwa:register-sw"[^>]*><\/script>//' "${INDEX_HTML}"
 
+# Home Assistant's own hass.http middleware unconditionally sets
+# `Referrer-Policy: no-referrer` on every response it serves (see
+# homeassistant/components/http/headers.py), including this page. Map tiles
+# fetched client-side from tile.openstreetmap.org then carry no Referer at
+# all, and OSM's tile server 403s requests missing one. A <meta name="referrer">
+# in the document overrides the HTTP-header-level policy for requests that
+# page initiates, so pin it back to the normal browser default explicitly
+# instead of inheriting HA's blanket no-referrer.
+$SEDCMD 's/<head>/<head><meta name="referrer" content="strict-origin-when-cross-origin">/' "${INDEX_HTML}"
+
 # The i18next backend config is also root-absolute and baked into the JS
 # bundle itself (Vite has no `base` config, so every hardcoded path in the
 # app code assumes it's served from "/") - confirmed by a real deployment:
