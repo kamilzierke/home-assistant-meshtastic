@@ -125,7 +125,7 @@ class MeshtasticTcpProxy:
                     packet = await client_connection.read_to_radio_packet()
                     if packet is None:
                         continue
-                    packet_bytes, to_radio = packet
+                    _packet_bytes, to_radio = packet
 
                     # skip disconnect request
                     if to_radio.disconnect:

@@ -109,7 +109,9 @@ class MeshtasticApiClient:
             ble_address = data[CONF_CONNECTION_BLUETOOTH_ADDRESS]
             ble_device = None
             if hass:
-                from homeassistant.components.bluetooth import async_ble_device_from_address
+                # Deliberately lazy: avoid importing HA's bluetooth component for
+                # setups that never use a Bluetooth connection.
+                from homeassistant.components.bluetooth import async_ble_device_from_address  # noqa: PLC0415
 
                 ble_device = async_ble_device_from_address(hass, ble_address, connectable=True)
             connection = AioBluetoothConnection(ble_address=ble_address, ble_device=ble_device)
