@@ -269,6 +269,10 @@ class MeshtasticWebConfigEntryView(HomeAssistantView):
 
 
 class MeshtasticWebApiHotspot(HomeAssistantView):
+    # Used by meshtastic/web clients up to ~v2.5.x as a lightweight "is the
+    # device alive" ping; removed from the client in v2.7.1 (superseded by
+    # the Connections page). Kept for backwards compatibility with anyone
+    # still on an older bundled client - harmless to leave in place.
     url = URL_BASE + "/web/{config_entry_id}/hotspot-detect.html"
     name = "meshtastic:web_api_hotspot"
     requires_auth = False
@@ -318,6 +322,16 @@ class MeshtasticWebApiV1View(HomeAssistantView):
 class MeshtasticWebApiV1ToRadioView(MeshtasticWebApiV1View):
     url = URL_BASE + "/web/{config_entry_id}/api/v1/toradio"
     name = "meshtastic:web_v1_to_radio"
+
+    async def options(
+        self,
+        request: HomeAssistantRequest,  # noqa: ARG002
+        config_entry_id: str,  # noqa: ARG002
+    ) -> web.Response:
+        # meshtastic/web (since v2.7.1) sends an OPTIONS request here as part of
+        # establishing a connection and ignores the response entirely, but a
+        # plain 200 is cheaper and cleaner than falling through to a 404/405.
+        return web.Response()
 
     async def put(self, request: HomeAssistantRequest, config_entry_id: str) -> web.Response:
         self._check_webclient_enabled(config_entry_id)
@@ -386,6 +400,9 @@ class MeshtasticWebApiV1FromRadioView(MeshtasticWebApiV1View):
 
 
 class MeshtasticWebJsonReportView(MeshtasticWebApiV1View):
+    # Not called by meshtastic/web's own JS in any version checked (v2.5.4
+    # through v2.7.1) - likely meant to mimic firmware's captive-portal/AP
+    # status JSON for some other consumer. Kept as a harmless no-op.
     url = URL_BASE + "/web/{config_entry_id}/json/report"
     name = "meshtastic:web_json_report"
 

@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+#
+# SPDX-FileCopyrightText: 2024-2025 Pascal Brogle @broglep
+#
+# SPDX-License-Identifier: MIT
+#
+# Updates the bundled Meshtastic web client (custom_components/meshtastic/meshtastic_web/static)
+# from an official https://github.com/meshtastic/web release, independently of this addon's own
+# release cycle - running this script and committing its result is a self-contained change that
+# never touches manifest.json/hacs.json.
+#
+# Usage: scripts/update_web_client <tag>
+#   e.g. scripts/update_web_client v2.7.1
+#
+# What it does:
+#   1. Downloads the release's `build.tar` asset (the only asset meshtastic/web publishes).
+#   2. Every file inside is individually gzip-compressed (packaged for gzip_static serving,
+#      NOT a gzipped tarball) - gunzips each one in place.
+#   3. Patches index.html: rewrites root-absolute href="/..."/src="/..." references to
+#      /meshtastic/web/... (this bundle is served under a sub-path by the Home Assistant
+#      integration, not from the site root the upstream build assumes), and strips the
+#      vite-pwa service-worker registration tag (the worker is `selfDestroying: true` and
+#      does nothing useful, but its hardcoded root-scoped registration would otherwise 404
+#      and spam the console under the sub-path).
+#   4. Replaces custom_components/meshtastic/meshtastic_web/static with the patched output.
+#   5. Updates custom_components/meshtastic/meshtastic_web/version.py to the new tag.
+#
+# Nothing is committed automatically - review `git status`/`git diff` and commit yourself,
+# same as scripts/generate_protobufs.
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+TAG="${1:-}"
+if [[ -z "${TAG}" ]]; then
+    echo "Usage: $0 <tag>  (e.g. $0 v2.7.1)" >&2
+    echo "See https://github.com/meshtastic/web/releases for available tags." >&2
+    exit 1
+fi
+
+STATIC_DIR="custom_components/meshtastic/meshtastic_web/static"
+VERSION_FILE="custom_components/meshtastic/meshtastic_web/version.py"
+RELEASE_URL="https://github.com/meshtastic/web/releases/download/${TAG}/build.tar"
+
+BUILD_DIR="$(pwd)/.build"
+mkdir -p "${BUILD_DIR}"
+TMPDIR="${BUILD_DIR}/web_client_update"
+[ -e "${TMPDIR}" ] && rm -rf "${TMPDIR}"
+DOWNLOAD_DIR="${TMPDIR}/download"
+EXTRACT_DIR="${TMPDIR}/extracted"
+mkdir -p "${DOWNLOAD_DIR}" "${EXTRACT_DIR}"
+
+echo "Downloading ${RELEASE_URL}"
+if ! curl -fL --retry 3 -o "${DOWNLOAD_DIR}/build.tar" "${RELEASE_URL}"; then
+    echo "Failed to download build.tar for tag '${TAG}'. Does that release exist and have a build.tar asset?" >&2
+    exit 1
+fi
+
+echo "Extracting build.tar"
+tar -xf "${DOWNLOAD_DIR}/build.tar" -C "${EXTRACT_DIR}"
+
+echo "Decompressing individually-gzipped assets"
+# OS-X `find -exec ... {} \+` behaves the same as GNU find here.
+find "${EXTRACT_DIR}" -type f -name '*.gz' -print0 | while IFS= read -r -d '' gz_file; do
+    gzip -d -f "${gz_file}"
+done
+
+INDEX_HTML="${EXTRACT_DIR}/index.html"
+if [[ ! -f "${INDEX_HTML}" ]]; then
+    echo "index.html not found in extracted release - unexpected build layout, aborting." >&2
+    exit 1
+fi
+
+echo "Patching index.html for /meshtastic/web/ sub-path deployment"
+# OS-X sed is apparently a little different and expects an arg for -i
+if [[ $OSTYPE == 'darwin'* ]]; then
+    if which gsed >/dev/null; then
+        SEDCMD="gsed -i -E"
+    else
+        SEDCMD="sed -i '' -E"
+    fi
+else
+    SEDCMD="sed -i -E"
+fi
+
+# Rewrite root-absolute href="/..."/src="/..." to /meshtastic/web/..., but leave
+# protocol-relative "//..." references alone.
+$SEDCMD 's/(href|src)="\/([^/])/\1="\/meshtastic\/web\/\2/g' "${INDEX_HTML}"
+# The service worker is registered with a hardcoded root scope ('/') and is
+# `selfDestroying: true` (it just unregisters itself, no real caching) - drop
+# just that <script> tag rather than also patching registerSW.js/sw.js.
+# index.html is minified to a single line, so this must be a substitution,
+# not a line-delete (`/pattern/d` would wipe the entire file).
+$SEDCMD 's/<script[^>]*id="vite-plugin-pwa:register-sw"[^>]*><\/script>//' "${INDEX_HTML}"
+
+echo "Replacing ${STATIC_DIR}"
+rm -rf "${STATIC_DIR}"
+mkdir -p "${STATIC_DIR}"
+cp -r "${EXTRACT_DIR}/." "${STATIC_DIR}/"
+rm -f "${STATIC_DIR}/build.tar"
+
+cat > "${VERSION_FILE}" <<EOT
+# SPDX-FileCopyrightText: 2024-2025 Pascal Brogle @broglep
+#
+# SPDX-License-Identifier: MIT
+
+VERSION = "${TAG}"
+EOT
+
+echo
+echo "Done. Bundled meshtastic web client updated to ${TAG}."
+echo "Review the changes and commit them yourself:"
+echo
+git status --short -- "${STATIC_DIR}" "${VERSION_FILE}"
