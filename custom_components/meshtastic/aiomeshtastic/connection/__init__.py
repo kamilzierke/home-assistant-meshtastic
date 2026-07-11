@@ -394,7 +394,7 @@ class ClientApiConnection:
                     while not self._on_demand_streaming_processing_stop.is_set():
                         try:
                             await self._process_packet_stream()
-                        except (ClientApiConnectionError, asyncio.exceptions.IncompleteReadError):
+                        except ClientApiConnectionError, asyncio.exceptions.IncompleteReadError:
                             self._logger.debug("On demand processing failed with connection error", exc_info=True)
                             if self._reconnect_in_progress.is_set():
                                 self._logger.debug("On demand processing, waiting for reconnect")
