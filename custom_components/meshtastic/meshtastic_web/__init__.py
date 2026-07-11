@@ -323,16 +323,6 @@ class MeshtasticWebApiV1ToRadioView(MeshtasticWebApiV1View):
     url = URL_BASE + "/web/{config_entry_id}/api/v1/toradio"
     name = "meshtastic:web_v1_to_radio"
 
-    async def options(
-        self,
-        request: HomeAssistantRequest,  # noqa: ARG002
-        config_entry_id: str,  # noqa: ARG002
-    ) -> web.Response:
-        # meshtastic/web (since v2.7.1) sends an OPTIONS request here as part of
-        # establishing a connection and ignores the response entirely, but a
-        # plain 200 is cheaper and cleaner than falling through to a 404/405.
-        return web.Response()
-
     async def put(self, request: HomeAssistantRequest, config_entry_id: str) -> web.Response:
         self._check_webclient_enabled(config_entry_id)
         connection = self.get_connection(request)
