@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from collections import defaultdict
-from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING
 
 import voluptuous as vol
 from homeassistant.core import (
@@ -29,7 +29,6 @@ from homeassistant.helpers.selector import (
 
 from .aiomeshtastic import MeshInterface
 from .aiomeshtastic.interface import TelemetryType
-from .api import MeshtasticApiClient
 from .const import (
     ATTR_SERVICE_BROADCAST_CHANNEL_MESSAGE_DATA_CHANNEL,
     ATTR_SERVICE_BROADCAST_CHANNEL_MESSAGE_DATA_MESSAGE,
@@ -52,6 +51,11 @@ from .const import (
     STATE_ATTRIBUTE_CHANNEL_NODE,
 )
 from .data import DATA_COMPONENT, MeshtasticConfigEntry
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from .api import MeshtasticApiClient
 
 SERVICE_SEND_TEXT_SCHEMA = vol.Schema(
     {

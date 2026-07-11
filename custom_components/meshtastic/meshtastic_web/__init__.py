@@ -15,11 +15,9 @@ from aiohttp import web
 from google.protobuf import message
 from homeassistant.components.http import HomeAssistantRequest, HomeAssistantView, StaticPathConfig
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
-from homeassistant.core import HomeAssistant
 
 from ..aiomeshtastic.connection import ClientApiConnection  # noqa: TID252
 from ..aiomeshtastic.protobuf import mesh_pb2  # noqa: TID252
-from ..api import MeshtasticApiClient  # noqa: TID252
 from ..const import (  # noqa: TID252
     CONF_OPTION_WEB_CLIENT,
     CONF_OPTION_WEB_CLIENT_ENABLE,
@@ -33,6 +31,9 @@ from ..const import (  # noqa: TID252
 from .proxy_server import GatewayWebProxyServer
 
 if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
+    from ..api import MeshtasticApiClient  # noqa: TID252
     from ..data import MeshtasticConfigEntry  # noqa: TID252
 
 _LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))

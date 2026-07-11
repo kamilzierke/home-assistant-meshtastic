@@ -2,14 +2,16 @@
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Mapping
 from functools import cached_property
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import google
 
 from .const import LOGGER
 from .protobuf import admin_pb2, mesh_pb2, portnums_pb2, telemetry_pb2
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 T = TypeVar("T", None, mesh_pb2.Routing, telemetry_pb2.Telemetry, admin_pb2.AdminMessage, str)
 

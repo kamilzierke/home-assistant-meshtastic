@@ -8,12 +8,10 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.components.device_automation import async_validate_entity_schema
 from homeassistant.const import CONF_DEVICE_ID, CONF_DOMAIN, CONF_TYPE
-from homeassistant.core import Context, HomeAssistant
 from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
 )
-from homeassistant.helpers.typing import ConfigType, TemplateVarsType, VolDictType
 
 from .aiomeshtastic.interface import TelemetryType
 from .const import (
@@ -28,7 +26,9 @@ from .const import (
 )
 
 if TYPE_CHECKING:
+    from homeassistant.core import Context, HomeAssistant
     from homeassistant.helpers.template import Template
+    from homeassistant.helpers.typing import ConfigType, TemplateVarsType, VolDictType
 
 ACTION_TYPE_SEND_MESSAGE = "send_message"
 ACTION_TYPE_REQUEST_TELEMETRY = "request_telemetry"

@@ -11,11 +11,11 @@ import functools
 import itertools
 import random
 from collections import defaultdict, deque
-from collections.abc import AsyncIterator, Awaitable, Callable, Mapping, MutableMapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType, TracebackType
 from typing import (
+    TYPE_CHECKING,
     Any,
     Self,
 )
@@ -30,7 +30,6 @@ try:
 except ImportError:
     _has_aiomqtt = False
 import google
-from google.protobuf.message import Message
 
 from .connection import (
     ClientApiConnection,
@@ -52,6 +51,11 @@ from .protobuf import (
     telemetry_pb2,
 )
 from .protobuf.mesh_pb2 import MeshPacket
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator, Awaitable, Callable, Mapping, MutableMapping
+
+    from google.protobuf.message import Message
 
 
 class MeshInterfaceError(MeshtasticError):

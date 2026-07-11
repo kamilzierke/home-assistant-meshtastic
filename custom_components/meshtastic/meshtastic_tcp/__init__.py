@@ -1,8 +1,7 @@
 # SPDX-FileCopyrightText: 2024-2025 Pascal Brogle @broglep
 #
 # SPDX-License-Identifier: MIT
-
-from homeassistant.core import HomeAssistant
+from typing import TYPE_CHECKING
 
 from ..const import (  # noqa: TID252
     CONF_OPTION_TCP_PROXY,
@@ -12,8 +11,12 @@ from ..const import (  # noqa: TID252
     CONF_OPTION_TCP_PROXY_PORT_DEFAULT,
     LOGGER,
 )
-from ..data import MeshtasticConfigEntry  # noqa: TID252
 from .server import MeshtasticTcpProxy
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
+    from ..data import MeshtasticConfigEntry  # noqa: TID252
 
 _LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))
 

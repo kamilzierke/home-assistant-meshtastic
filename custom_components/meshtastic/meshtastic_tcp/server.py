@@ -4,16 +4,19 @@
 
 import asyncio
 from asyncio import StreamReader, StreamWriter
-from types import TracebackType
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 from google.protobuf import message
 
-from custom_components.meshtastic.aiomeshtastic import MeshInterface
 from custom_components.meshtastic.aiomeshtastic.connection import ClientApiConnection
 from custom_components.meshtastic.aiomeshtastic.connection.streaming import StreamingClientTransport
 from custom_components.meshtastic.aiomeshtastic.protobuf import mesh_pb2
 from custom_components.meshtastic.const import LOGGER
+
+if TYPE_CHECKING:
+    from types import TracebackType
+
+    from custom_components.meshtastic.aiomeshtastic import MeshInterface
 
 _LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))
 

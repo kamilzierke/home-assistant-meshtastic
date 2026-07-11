@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+from typing import TYPE_CHECKING
+
 import voluptuous as vol
 from homeassistant.components.device_automation import (
     DEVICE_TRIGGER_BASE_SCHEMA,
@@ -17,15 +19,17 @@ from homeassistant.const import (
     CONF_TYPE,
     Platform,
 )
-from homeassistant.core import CALLBACK_TYPE, HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.trigger import TriggerActionType, TriggerInfo
-from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, EVENT_MESHTASTIC_DOMAIN_EVENT, MeshtasticDomainEventData, MeshtasticDomainEventType
 from .entity import MeshtasticDeviceClass
+
+if TYPE_CHECKING:
+    from homeassistant.core import CALLBACK_TYPE, HomeAssistant
+    from homeassistant.helpers.trigger import TriggerActionType, TriggerInfo
+    from homeassistant.helpers.typing import ConfigType
 
 TRIGGER_MESSAGE_RECEIVED = "message.received"
 TRIGGER_DIRECT_MESSAGE_RECEIVED = "direct_message.received"

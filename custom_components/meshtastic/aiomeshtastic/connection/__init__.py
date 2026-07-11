@@ -7,13 +7,10 @@ import contextlib
 import logging
 import random
 from abc import abstractmethod
-from collections.abc import AsyncIterable, Awaitable, Callable, Coroutine
 from contextlib import asynccontextmanager
-from types import TracebackType
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import google
-from google.protobuf.message import Message
 
 from ..packet import Packet  # noqa: TID252
 from ..protobuf import mesh_pb2, portnums_pb2  # noqa: TID252
@@ -26,6 +23,12 @@ from .errors import (
     ClientApiNotConnectedError,
 )
 from .listener import ClientApiConnectionPacketStreamListener
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterable, Awaitable, Callable, Coroutine
+    from types import TracebackType
+
+    from google.protobuf.message import Message
 
 LOGGER = logging.getLogger(__package__)
 

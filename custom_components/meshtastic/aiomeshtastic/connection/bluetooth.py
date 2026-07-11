@@ -5,7 +5,6 @@
 
 import asyncio
 import struct
-from collections.abc import AsyncGenerator
 from contextlib import suppress
 from typing import TYPE_CHECKING, Any
 
@@ -22,6 +21,8 @@ from .errors import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from bleak.backends.service import BleakGATTService
 
 

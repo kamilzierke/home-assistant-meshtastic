@@ -4,7 +4,7 @@
 
 import asyncio
 from abc import abstractmethod
-from collections.abc import AsyncIterable
+from typing import TYPE_CHECKING
 
 from google.protobuf import message
 
@@ -15,6 +15,9 @@ from . import (
     ClientApiConnectionInterruptedError,
     ClientApiNotConnectedError,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterable
 
 
 class StreamingClientTransport(ClientApiConnection):

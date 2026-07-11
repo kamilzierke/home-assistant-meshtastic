@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: MIT
 
 import asyncio
-from collections.abc import AsyncIterable
-from types import TracebackType
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
-from ..protobuf import mesh_pb2  # noqa: TID252
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterable
+    from types import TracebackType
+
+    from ..protobuf import mesh_pb2  # noqa: TID252
 
 
 class ClientApiConnectionPacketStreamListener:

@@ -2,7 +2,10 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .protobuf import mesh_pb2
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .protobuf import mesh_pb2
 
 
 class MeshtasticError(Exception):
