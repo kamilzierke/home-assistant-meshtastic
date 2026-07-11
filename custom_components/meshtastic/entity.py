@@ -12,6 +12,7 @@ import voluptuous as vol
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, STATE_ATTRIBUTE_CHANNEL_INDEX, STATE_ATTRIBUTE_CHANNEL_NODE
@@ -238,7 +239,20 @@ class MeshtasticCoordinatorEntity(CoordinatorEntity[MeshtasticDataUpdateCoordina
         return super()._name_internal(device_class_name, platform_translations)
 
 
-class MeshtasticNodeEntity(MeshtasticCoordinatorEntity, ABC):
+class MeshtasticNodeEntity(MeshtasticCoordinatorEntity, RestoreEntity, ABC):
+    """
+    Node-derived entity (sensor/binary_sensor/device_tracker).
+
+    Calls _async_update_attrs() once at construction time so the entity is
+    seeded from whatever data the coordinator already has (rather than
+    showing unavailable/blank until the next coordinator push event fires,
+    which could otherwise take a while). RestoreEntity is mixed in as a
+    fallback for the remaining gap: a fresh Home Assistant restart where the
+    gateway hasn't yet redelivered this node's data at all this session, in
+    which case the entity still exists with its last known state (marked
+    unavailable) instead of not existing until the data reappears.
+    """
+
     def __init__(
         self,
         coordinator: MeshtasticDataUpdateCoordinator,
@@ -263,6 +277,11 @@ class MeshtasticNodeEntity(MeshtasticCoordinatorEntity, ABC):
             f"{coordinator.config_entry.entry_id}_{platform}_{self.node_id}_{self.entity_description.key}"
         )
         self._attr_has_entity_name = True
+
+        # Seed attrs from whatever data the coordinator already has, rather
+        # than waiting for the next coordinator push event (see class
+        # docstring).
+        self._async_update_attrs()
 
     @property
     def node_id(self) -> int:

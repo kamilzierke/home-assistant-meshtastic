@@ -11,16 +11,13 @@ https://github.com/meshtastic/home-assistant
 
 from __future__ import annotations
 
-import asyncio
 import base64
 import datetime
 from collections import defaultdict
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, cast
 
-from homeassistant import config_entries
 from homeassistant.components.logbook import DOMAIN as LOGBOOK_DOMAIN
-from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import (
     CONF_HOST,
     CONF_PORT,
@@ -147,8 +144,7 @@ async def async_setup_entry(
         gateway_node=gateway_node,
     )
 
-    if entry.state == ConfigEntryState.SETUP_IN_PROGRESS:
-        await coordinator.async_config_entry_first_refresh()
+    await coordinator.async_config_entry_first_refresh()
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
@@ -376,23 +372,19 @@ async def async_unload_entry(
     return unload_ok
 
 
-_reload_lock = asyncio.Lock()
-
-
 async def async_reload_entry(
     hass: HomeAssistant,
     entry: MeshtasticConfigEntry,
 ) -> None:
-    async with _reload_lock:
-        token = None
-        if config_entries.current_entry.get() is None:
-            token = config_entries.current_entry.set(entry)
-        try:
-            await async_unload_entry(hass, entry)
-            await async_setup_entry(hass, entry)
-        finally:
-            if token:
-                config_entries.current_entry.reset(token)
+    # Go through hass.config_entries.async_reload() instead of calling
+    # async_unload_entry()/async_setup_entry() directly: the direct-call
+    # version bypassed ConfigEntries' own state machine, so entry.state
+    # never transitioned to SETUP_IN_PROGRESS on this path, which in turn
+    # skipped the coordinator's first refresh (see async_setup_entry) and
+    # left coordinator.data permanently None after any options-flow save.
+    # async_reload() handles state transitions and per-entry serialization
+    # itself, so the manual lock/contextvar handling here is no longer needed.
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: MeshtasticConfigEntry) -> bool:

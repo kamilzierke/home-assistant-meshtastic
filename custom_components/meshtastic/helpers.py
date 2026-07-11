@@ -8,6 +8,7 @@ import typing
 from collections import defaultdict
 
 from homeassistant.helpers import entity_platform
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import CONF_OPTION_FILTER_NODES, LOGGER
@@ -40,7 +41,7 @@ _remove_listeners = defaultdict(lambda: defaultdict(list))
 
 
 async def setup_platform_entry(
-    hass: HomeAssistant,  # noqa: ARG001 function argument: `hass`
+    hass: HomeAssistant,
     entry: MeshtasticConfigEntry,
     async_add_entities: AddEntitiesCallback,
     entity_factory: Callable[[typing.Mapping[int, typing.Mapping[str, Any]], MeshtasticData], Iterable[Entity]],
@@ -49,10 +50,28 @@ async def setup_platform_entry(
     platform = entity_platform.async_get_current_platform()
 
     def on_coordinator_data_update() -> None:
-        entities = entity_factory(get_nodes(entry), entry.runtime_data)
+        current_nodes = get_nodes(entry)
+        entities = entity_factory(current_nodes, entry.runtime_data)
         new_entities = [s for s in entities if s.entity_id not in platform.entities]
         if new_entities:
             async_add_entities(new_entities)
+
+        # Gold quality-scale "dynamic-devices" pattern: remove entities for
+        # nodes that are no longer selected/tracked. This deliberately only
+        # checks node_id membership in current_nodes, not whether
+        # entity_factory's *current* output still contains this exact
+        # entity_id: a metric that's simply absent from a single coordinator
+        # update (e.g. a momentary telemetry gap) must not delete its
+        # entity - only an explicit deselection of the node should.
+        stale_entity_ids = [
+            entity_id
+            for entity_id, entity in platform.entities.items()
+            if getattr(entity, "node_id", None) is not None and entity.node_id not in current_nodes
+        ]
+        if stale_entity_ids:
+            entity_registry = er.async_get(hass)
+            for entity_id in stale_entity_ids:
+                entity_registry.async_remove(entity_id)
 
     remove_listener = entry.runtime_data.coordinator.async_add_listener(on_coordinator_data_update)
     _remove_listeners[platform.domain][entry.entry_id].append(remove_listener)
