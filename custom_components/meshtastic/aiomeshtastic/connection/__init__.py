@@ -97,7 +97,7 @@ class ClientApiConnection:
     def is_connected(self) -> bool:
         pass
 
-    async def __aenter__(self) -> "ClientApiConnection":
+    async def __aenter__(self) -> ClientApiConnection:
         if not self.is_connected:
             await self.connect()
         return self

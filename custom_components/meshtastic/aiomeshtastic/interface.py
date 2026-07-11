@@ -67,7 +67,7 @@ class MeshNode:
     long_name: str
 
     @staticmethod
-    def stub_node(node_id: int) -> "MeshNode":
+    def stub_node(node_id: int) -> MeshNode:
         user_id = f"!{node_id:08x}"
         return MeshNode(
             id=node_id, user_id=user_id, short_name=f"{user_id[-4:]}", long_name=f"Meshtastic {user_id[-4:]}"
@@ -82,7 +82,7 @@ class MeshChannel:
 
 def process_while_running(f):  # noqa: ANN001, ANN201
     @functools.wraps(f)
-    async def wrapper(self: "MeshInterface") -> None:
+    async def wrapper(self: MeshInterface) -> None:
         while self.is_running:
             try:
                 self._logger.debug("Processing while running starting, function: %s", f.__name__)
@@ -120,7 +120,7 @@ class MeshInterface:
 
     def __init__(  # noqa: PLR0913
         self,
-        connection: "ClientApiConnection",
+        connection: ClientApiConnection,
         *,
         debug_out: bool = False,
         no_proto: bool = False,
