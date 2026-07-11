@@ -303,10 +303,17 @@ that are not connected via TCP (like serial or bluetooth) or don't support TCP a
 anyone that can reach your home assistant instance (because meshtastic does not support authentication on the http api).
 Make sure to only use this feature if your home assistant instance is running in a trusted environment!
 
+**Port Note**: the bundled web client's "Connections" page only accepts a bare `host:port` address (no path), so each
+gateway with the web client enabled gets its own dedicated TCP port (configurable, defaults starting at `4408`) that
+this integration listens on directly - separate from Home Assistant's own port. If your Home Assistant instance is
+behind a firewall, make sure this port is reachable from wherever you'll use the web client from. This proxy also
+only speaks plain HTTP (no TLS) - if you access Home Assistant itself over HTTPS, connecting to it may be blocked by
+your browser as mixed content; use `http://` for the web client in that case.
+
 To access the web client, perform the following steps:
 
 In Home Assistant:
-1. Enable the feature in the integration configuration
+1. Enable the feature in the integration configuration and note/adjust the port it's assigned
 2. Navigate to the "Meshtastic" menu item. If you don't see it, reload home assistant interface
 3. Press the "Open" button of the desired gateway - this opens an intermediate page with the exact
    address to connect to (the bundled web client's "Connections" page doesn't auto-fill it)
@@ -318,8 +325,7 @@ On that intermediate page:
 Inside the Meshtastic Web Client:
 
 5. Press "Add connection" -> "Network"
-6. Paste the copied address into the "URL or IP" field, matching the "Use HTTPS" toggle to how
-   you're accessing Home Assistant
+6. Paste the copied address into the "URL or IP" field and leave "Use HTTPS" off (see Port Note above)
 7. Save/connect
 
 ## Contributions are welcome!

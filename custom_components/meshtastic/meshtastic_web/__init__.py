@@ -24,15 +24,51 @@ from ..const import (  # noqa: TID252
     CONF_OPTION_WEB_CLIENT,
     CONF_OPTION_WEB_CLIENT_ENABLE,
     CONF_OPTION_WEB_CLIENT_ENABLE_DEFAULT,
+    CONF_OPTION_WEB_CLIENT_PORT,
+    CONF_OPTION_WEB_CLIENT_PORT_DEFAULT,
     DOMAIN,
     LOGGER,
     URL_BASE,
 )
+from .proxy_server import GatewayWebProxyServer
 
 if TYPE_CHECKING:
     from ..data import MeshtasticConfigEntry  # noqa: TID252
 
 _LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))
+
+_proxy_servers: dict[str, GatewayWebProxyServer] = {}
+
+
+async def async_setup_web_proxy_server(
+    hass: HomeAssistant,  # noqa: ARG001
+    entry: MeshtasticConfigEntry,
+) -> bool:
+    """Start this entry's dedicated-port HTTP proxy (see proxy_server.py for why)."""
+    web_client_config = entry.options.get(CONF_OPTION_WEB_CLIENT, {})
+    if not web_client_config.get(CONF_OPTION_WEB_CLIENT_ENABLE, CONF_OPTION_WEB_CLIENT_ENABLE_DEFAULT):
+        return False
+
+    port = web_client_config.get(CONF_OPTION_WEB_CLIENT_PORT, CONF_OPTION_WEB_CLIENT_PORT_DEFAULT)
+    server = GatewayWebProxyServer(entry, port)
+    try:
+        await server.start()
+    except Exception:  # noqa: BLE001
+        _LOGGER.warning("Failed to start web client proxy server on port %s", port, exc_info=True)
+        return False
+    _proxy_servers[entry.entry_id] = server
+    return True
+
+
+async def async_unload_web_proxy_server(
+    hass: HomeAssistant,  # noqa: ARG001
+    entry: MeshtasticConfigEntry,
+) -> bool:
+    server = _proxy_servers.pop(entry.entry_id, None)
+    if server is None:
+        return False
+    await server.stop()
+    return True
 
 
 class MeshtasticWebApiContext:
@@ -224,12 +260,11 @@ async def async_setup(hass: HomeAssistant) -> bool:
         return True
 
 
-def _render_connect_instructions_html(*, connection_value: str, use_https: bool, client_url: str) -> str:
+def _render_connect_instructions_html(*, connection_value: str, client_url: str) -> str:
     # connection_value is derived from the request's Host header, which a
     # client fully controls - escape it before embedding in HTML.
     safe_value = html.escape(connection_value)
     safe_client_url = html.escape(client_url)
-    https_hint = "Turn on" if use_https else "Leave off"
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -260,7 +295,9 @@ def _render_connect_instructions_html(*, connection_value: str, use_https: bool,
       Copied (or selected - press Ctrl+C / Cmd+C if it didn't copy automatically).
     </p>
   </li>
-  <li>{https_hint} <strong>Use HTTPS</strong>, matching how you're accessing Home Assistant right now.</li>
+  <li>Leave <strong>Use HTTPS</strong> off - this proxy only speaks plain HTTP. If you're accessing
+    Home Assistant itself over HTTPS, your browser will likely block this as mixed content;
+    open the web client via <code>http://</code> (not <code>https://</code>) instead.</li>
   <li>Save the connection.</li>
 </ol>
 <a class="button" href="{safe_client_url}">Open Meshtastic Web Client</a>
@@ -320,7 +357,6 @@ class MeshtasticWebConfigEntryView(HomeAssistantView):
         entity = entity_registry.async_get(entity_id)
         if entity is None:
             return web.HTTPNotFound()
-        path = f"{URL_BASE}/web/{entity.config_entry_id}"
 
         config_entry = self._hass.config_entries.async_get_entry(entity.config_entry_id)
         if config_entry.state != ConfigEntryState.LOADED:
@@ -330,23 +366,23 @@ class MeshtasticWebConfigEntryView(HomeAssistantView):
                 headers={"Cache-Control": "no-cache"},
             )
 
-        if not config_entry.options.get(CONF_OPTION_WEB_CLIENT, {}).get(
-            CONF_OPTION_WEB_CLIENT_ENABLE, CONF_OPTION_WEB_CLIENT_ENABLE_DEFAULT
-        ):
+        web_client_config = config_entry.options.get(CONF_OPTION_WEB_CLIENT, {})
+        if not web_client_config.get(CONF_OPTION_WEB_CLIENT_ENABLE, CONF_OPTION_WEB_CLIENT_ENABLE_DEFAULT):
             return web.HTTPForbidden(body="Web client not enabled for gateway", headers={"Cache-Control": "no-cache"})
 
-        # meshtastic/web's "Connections" page (since v2.7.1) no longer reads a
-        # `?path=` query param to auto-fill/auto-connect - its "Add connection"
-        # dialog only has a single free-text "URL or IP" field, which it
-        # concatenates directly after "http(s)://" with no separate path
-        # component. So instead of redirecting straight into the client (which
-        # would land on an empty "No connections yet" screen with no way to
-        # know what to enter), show the exact value to paste in first.
-        connection_value = f"{request.host}{path}"
+        # meshtastic/web's "Connections" page (since v2.7.1) validates its "URL
+        # or IP" field against a bare host[:port] pattern - no path component
+        # is accepted at all - so instead of redirecting straight into the
+        # client (which would land on an empty "No connections yet" screen
+        # with no way to know what to enter), show the exact value to paste
+        # in first: this entry's dedicated web-client-proxy port (see
+        # proxy_server.py), on the same hostname the browser used to reach
+        # Home Assistant.
+        port = web_client_config.get(CONF_OPTION_WEB_CLIENT_PORT, CONF_OPTION_WEB_CLIENT_PORT_DEFAULT)
+        connection_value = f"{request.url.host}:{port}"
         return web.Response(
             text=_render_connect_instructions_html(
                 connection_value=connection_value,
-                use_https=request.secure,
                 client_url=f"{URL_BASE}/web/index.html",
             ),
             content_type="text/html",

@@ -45,6 +45,13 @@ CONF_OPTION_WEB_CLIENT = "web_client"
 CONF_OPTION_WEB_CLIENT_ENABLE = "enable"
 CONF_OPTION_WEB_CLIENT_ENABLE_DEFAULT = False
 
+# The bundled meshtastic web client (since v2.7.1) only lets its "Connections" page
+# address a bare host[:port] with no path (client-side validation rejects anything
+# else), so each gateway's web-client proxy needs its own dedicated port - the same
+# constraint the TCP proxy below already has, and why this mirrors its port pattern.
+CONF_OPTION_WEB_CLIENT_PORT = "port"
+CONF_OPTION_WEB_CLIENT_PORT_DEFAULT = 4408
+
 
 CONF_OPTION_TCP_PROXY = "tcp_proxy"
 CONF_OPTION_TCP_PROXY_ENABLE = "enable"

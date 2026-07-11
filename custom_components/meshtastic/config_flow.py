@@ -45,6 +45,8 @@ from .const import (
     CONF_OPTION_TCP_PROXY_PORT_DEFAULT,
     CONF_OPTION_WEB_CLIENT_ENABLE,
     CONF_OPTION_WEB_CLIENT_ENABLE_DEFAULT,
+    CONF_OPTION_WEB_CLIENT_PORT,
+    CONF_OPTION_WEB_CLIENT_PORT_DEFAULT,
     CURRENT_CONFIG_VERSION_MAJOR,
     DOMAIN,
     LOGGER,
@@ -168,7 +170,11 @@ def _build_meshtastic_web_schema(
             vol.Required(
                 CONF_OPTION_WEB_CLIENT_ENABLE,
                 default=options.get(CONF_OPTION_WEB_CLIENT_ENABLE, CONF_OPTION_WEB_CLIENT_ENABLE_DEFAULT),
-            ): cv.boolean
+            ): cv.boolean,
+            vol.Required(
+                CONF_OPTION_WEB_CLIENT_PORT,
+                default=options.get(CONF_OPTION_WEB_CLIENT_PORT, CONF_OPTION_WEB_CLIENT_PORT_DEFAULT),
+            ): cv.positive_int,
         }
     )
 
@@ -208,10 +214,14 @@ async def validate_input_for_connection(
         raise CannotConnectError from e
 
 
-async def validate_tcp_proxy_port(hass: HomeAssistant, config_entry: ConfigEntry | None, data: dict[str, Any]) -> bool:
-    if not data.get(CONF_OPTION_TCP_PROXY, {}).get(CONF_OPTION_TCP_PROXY_ENABLE, CONF_OPTION_TCP_PROXY_ENABLE_DEFAULT):
-        return True
+def _collect_other_used_ports(hass: HomeAssistant, config_entry: ConfigEntry | None) -> set[int]:
+    """
+    Ports already claimed by any *other* entry's enabled TCP proxy or web client proxy.
 
+    Both features bind a dedicated port per gateway (see CONF_OPTION_WEB_CLIENT_PORT), so
+    they're checked together - a TCP proxy and a web client proxy must not collide either,
+    not just two of the same feature.
+    """
     if config_entry is None:
         other_active_entries = hass.config_entries.async_entries(DOMAIN, include_ignore=False, include_disabled=False)
     else:
@@ -220,31 +230,55 @@ async def validate_tcp_proxy_port(hass: HomeAssistant, config_entry: ConfigEntry
             for e in hass.config_entries.async_entries(DOMAIN, include_ignore=False, include_disabled=False)
             if e.entry_id != config_entry.entry_id
         ]
-    other_tcp_proxies = [e.options.get(CONF_OPTION_TCP_PROXY, {}) for e in other_active_entries]
 
-    other_ports = {
-        c.get(CONF_OPTION_TCP_PROXY_PORT, CONF_OPTION_TCP_PROXY_PORT_DEFAULT)
-        for c in other_tcp_proxies
-        if c.get(CONF_OPTION_TCP_PROXY_ENABLE, CONF_OPTION_TCP_PROXY_ENABLE_DEFAULT)
-    }
+    ports: set[int] = set()
+    for e in other_active_entries:
+        tcp_proxy = e.options.get(CONF_OPTION_TCP_PROXY, {})
+        if tcp_proxy.get(CONF_OPTION_TCP_PROXY_ENABLE, CONF_OPTION_TCP_PROXY_ENABLE_DEFAULT):
+            ports.add(tcp_proxy.get(CONF_OPTION_TCP_PROXY_PORT, CONF_OPTION_TCP_PROXY_PORT_DEFAULT))
+        web_client = e.options.get(CONF_OPTION_WEB_CLIENT, {})
+        if web_client.get(CONF_OPTION_WEB_CLIENT_ENABLE, CONF_OPTION_WEB_CLIENT_ENABLE_DEFAULT):
+            ports.add(web_client.get(CONF_OPTION_WEB_CLIENT_PORT, CONF_OPTION_WEB_CLIENT_PORT_DEFAULT))
+    return ports
+
+
+def _is_port_free(port: int) -> bool:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            return s.connect_ex(("localhost", port)) != 0
+    except Exception:  # noqa: BLE001
+        _LOGGER.debug("Failed to probe port %s", port, exc_info=True)
+        return False
+
+
+async def validate_tcp_proxy_port(hass: HomeAssistant, config_entry: ConfigEntry | None, data: dict[str, Any]) -> bool:
+    if not data.get(CONF_OPTION_TCP_PROXY, {}).get(CONF_OPTION_TCP_PROXY_ENABLE, CONF_OPTION_TCP_PROXY_ENABLE_DEFAULT):
+        return True
 
     port = data[CONF_OPTION_TCP_PROXY].get(CONF_OPTION_TCP_PROXY_PORT, CONF_OPTION_TCP_PROXY_PORT_DEFAULT)
-    if port in other_ports:
+    if port in _collect_other_used_ports(hass, config_entry):
         return False
 
     port_changed = config_entry is None or port != config_entry.options.get(CONF_OPTION_TCP_PROXY, {}).get(
         CONF_OPTION_TCP_PROXY_PORT, CONF_OPTION_TCP_PROXY_PORT_DEFAULT
     )
-    if port_changed:
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                if s.connect_ex(("localhost", port)) == 0:
-                    return False
-        except Exception:  # noqa: BLE001
-            _LOGGER.debug("Failed to validate tcp proxy port", exc_info=True)
-            return False
+    return not port_changed or _is_port_free(port)
 
-    return True
+
+async def validate_web_client_port(hass: HomeAssistant, config_entry: ConfigEntry | None, data: dict[str, Any]) -> bool:
+    if not data.get(CONF_OPTION_WEB_CLIENT, {}).get(
+        CONF_OPTION_WEB_CLIENT_ENABLE, CONF_OPTION_WEB_CLIENT_ENABLE_DEFAULT
+    ):
+        return True
+
+    port = data[CONF_OPTION_WEB_CLIENT].get(CONF_OPTION_WEB_CLIENT_PORT, CONF_OPTION_WEB_CLIENT_PORT_DEFAULT)
+    if port in _collect_other_used_ports(hass, config_entry):
+        return False
+
+    port_changed = config_entry is None or port != config_entry.options.get(CONF_OPTION_WEB_CLIENT, {}).get(
+        CONF_OPTION_WEB_CLIENT_PORT, CONF_OPTION_WEB_CLIENT_PORT_DEFAULT
+    )
+    return not port_changed or _is_port_free(port)
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -544,8 +578,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_web_client(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         errors: dict[str, str] = {}
         if user_input is not None:
-            self.options[CONF_OPTION_WEB_CLIENT] = user_input
-            return await self.async_step_tcp_proxy()
+            if not await validate_web_client_port(self.hass, None, {CONF_OPTION_WEB_CLIENT: user_input}):
+                errors[CONF_OPTION_WEB_CLIENT_PORT] = "port_in_use"
+
+            if not errors:
+                self.options[CONF_OPTION_WEB_CLIENT] = user_input
+                return await self.async_step_tcp_proxy()
 
         schema = _build_meshtastic_web_schema(user_input or {})
         return self.async_show_form(step_id="web_client", data_schema=schema, errors=errors)
@@ -652,7 +690,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 new_data[CONF_OPTION_NOTIFY_PLATFORM] = user_input[CONF_OPTION_NOTIFY_PLATFORM]
 
             if CONF_OPTION_WEB_CLIENT in user_input:
-                new_data[CONF_OPTION_WEB_CLIENT] = user_input[CONF_OPTION_WEB_CLIENT]
+                if not await validate_web_client_port(self.hass, self.config_entry, user_input):
+                    errors["base"] = "option_invalid"
+                    errors["web_client"] = "port_in_use"
+                else:
+                    new_data[CONF_OPTION_WEB_CLIENT] = user_input[CONF_OPTION_WEB_CLIENT]
 
             if CONF_OPTION_TCP_PROXY in user_input:
                 if not await validate_tcp_proxy_port(self.hass, self.config_entry, user_input):
@@ -701,7 +743,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     _build_notify_platform_schema(notify_options), {"collapsed": True}
                 ),
                 vol.Required(CONF_OPTION_WEB_CLIENT): data_entry_flow.section(
-                    _build_meshtastic_web_schema(webclient_options), {"collapsed": True}
+                    _build_meshtastic_web_schema(webclient_options), {"collapsed": "web_client" not in errors}
                 ),
                 vol.Required(CONF_OPTION_TCP_PROXY): data_entry_flow.section(
                     _build_meshtastic_tcp_schema(tcp_proxy_options), {"collapsed": "tcp_proxy" in errors}
