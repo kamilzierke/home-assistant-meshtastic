@@ -66,23 +66,36 @@ file.
   `custom_components/meshtastic/aiomeshtastic/protobuf/*_pb2.py(i)` from the `protobufs` git
   submodule. To bump to a newer Meshtastic protobuf schema:
   1. `cd protobufs && git fetch && git checkout <new tag> && cd ..`
-  2. `pip install -r requirements.protobuf.txt`
-  3. `./scripts/generate_protobufs`
-  4. Check the "Protobuf Python Version: X.Y.Z" comment near the top of any regenerated
-     `*_pb2.py` file, and make sure `custom_components/meshtastic/manifest.json`'s
-     `protobuf>=X.Y.Z` requirement (and `requirements.txt`'s pin) is at least that version -
-     otherwise Home Assistant can resolve an older `protobuf` package that fails to import
-     the generated code at runtime.
-  5. Commit the `protobufs` submodule bump together with the regenerated files (and the
-     manifest bump from step 4, if any).
+  2. Check `requirements.protobuf.txt`'s pinned `grpcio-tools`/`mypy-protobuf` versions are
+     still appropriate (see the important note in that file - the bundled protoc's gencode
+     version must not exceed whatever `protobuf` version Home Assistant core itself currently
+     pins in `homeassistant/package_constraints.txt`, or HA will refuse to install this
+     integration's requirements at all; bumping our own `protobuf` requirement upward does
+     **not** fix that - it needs an *older* `grpcio-tools` release, not a newer floor).
+  3. `pip install -r requirements.protobuf.txt`
+  4. `./scripts/generate_protobufs`
+  5. Check the "Protobuf Python Version: X.Y.Z" comment near the top of any regenerated
+     `*_pb2.py` file and update `custom_components/meshtastic/manifest.json`'s
+     `protobuf>=X.Y.Z` requirement and `requirements.txt`'s exact pin accordingly.
+  6. Commit the `protobufs` submodule bump together with the regenerated files (and any
+     manifest/requirements changes from steps 2 and 5).
 - `scripts/update_web_client <tag>` - updates the bundled Meshtastic web client
   (`custom_components/meshtastic/meshtastic_web/static`) from an official
   [meshtastic/web release](https://github.com/meshtastic/web/releases), independently of this
   addon's own release cycle - e.g. `./scripts/update_web_client v2.7.1`. It downloads the
-  release's `build.tar` asset, decompresses it, patches `index.html` to work under the
-  `/meshtastic/web/` sub-path this integration serves it from, and bumps
-  `custom_components/meshtastic/meshtastic_web/version.py`. Review the diff and commit it
-  yourself - the script never touches `manifest.json`/`hacs.json` or commits anything.
+  release's `build.tar` asset, decompresses it, patches `index.html` and every `.js` file to
+  work under the `/meshtastic/web/` sub-path this integration serves the client from (asset
+  paths *and* the i18next translation loader are both root-absolute in the upstream build -
+  Vite has no `base` config), and bumps `custom_components/meshtastic/meshtastic_web/version.py`.
+  Review the diff and commit it yourself - the script never touches `manifest.json`/`hacs.json`
+  or commits anything.
+
+  After bumping, manually verify the "Connections" page still only needs a bare `host:port`
+  in its "URL or IP" field (no path) - that field is validated client-side against
+  IPv4/domain/`.local` regexes with no way to enter a path, which is *why*
+  `meshtastic_web/proxy_server.py` gives each gateway its own dedicated port instead of a
+  shared path prefix (mirroring `meshtastic_tcp`'s existing per-gateway TCP proxy port). If a
+  future client version changes this validation, the proxy architecture may need revisiting.
 
 ## License
 

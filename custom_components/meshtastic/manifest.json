@@ -104,7 +104,7 @@
       "pid": "7523"
     }
   ],
-  "version": "0.6.1",
+  "version": "0.7.0",
   "zeroconf": [
     "_meshtastic._tcp.local.",
     "_http._tcp.local."
