@@ -12,7 +12,7 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import HomeAssistantError, IntegrationError
+from homeassistant.exceptions import IntegrationError
 from homeassistant.helpers.selector import (
     SelectOptionDict,
     SelectSelector,
@@ -51,6 +51,7 @@ from .const import (
     ConfigOptionNotifyPlatformNodes,
     ConnectionType,
 )
+from .exceptions import CannotConnectError
 
 if TYPE_CHECKING:
     import asyncio
@@ -239,7 +240,7 @@ async def validate_tcp_proxy_port(hass: HomeAssistant, config_entry: ConfigEntry
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 if s.connect_ex(("localhost", port)) == 0:
                     return False
-        except:  # noqa: E722
+        except Exception:  # noqa: BLE001
             _LOGGER.debug("Failed to validate tcp proxy port", exc_info=True)
             return False
 
@@ -269,7 +270,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             gateway_node, nodes = await validate_input_for_connection(self.hass, data, no_nodes=no_full_load)
         except CannotConnectError:
             errors["base"] = "cannot_connect"
-        except:  # noqa: E722
+        except Exception:  # noqa: BLE001
             _LOGGER.warning("Unexpected exception", exc_info=True)
             errors["base"] = "unknown"
         else:
@@ -586,10 +587,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_abort(reason="invalid_connection_type")
 
 
-class CannotConnectError(HomeAssistantError):
-    pass
-
-
 class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:  # noqa: ARG002
         self.options = {}
@@ -610,7 +607,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 _, self.nodes = await validate_input_for_connection(self.hass, self.config_entry.data)
             except CannotConnectError:
                 errors["base"] = "cannot_connect"
-            except:  # noqa: E722
+            except Exception:  # noqa: BLE001
                 _LOGGER.warning("Unexpected exception", exc_info=True)
                 errors["base"] = "unknown"
 

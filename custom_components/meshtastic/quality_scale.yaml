@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: 2024-2025 Pascal Brogle @broglep
+#
+# SPDX-License-Identifier: MIT
+#
+# Self-assessment against Home Assistant's Integration Quality Scale
+# (https://developers.home-assistant.io/docs/core/integration-quality-scale/).
+# This is a HACS/custom integration, not a core integration, so it is not
+# formally reviewed or scored by the Home Assistant project - this file is
+# kept for our own tracking and to be transparent about known gaps.
+rules:
+  # Bronze
+  action-setup: done
+  appropriate-polling:
+    status: done
+    comment: >
+      DataUpdateCoordinator polls hourly as a fallback; normal operation is
+      push-driven via meshtastic API events.
+  brands:
+    status: todo
+    comment: Requires a submission to the separate home-assistant/brands repository.
+  common-modules: done
+  config-flow: done
+  config-flow-test-coverage:
+    status: todo
+    comment: Config flow test coverage tracked separately (see tests/).
+  dependency-transparency: done
+  docs-actions: done
+  docs-high-level-description: done
+  docs-installation-instructions: done
+  docs-removal-instructions: todo
+  entity-event-setup: done
+  entity-unique-id: done
+  has-entity-name: done
+  runtime-data: done
+  test-before-configure: done
+  test-before-setup: done
+  unique-config-entry: done
+  # Silver
+  action-exceptions: done
+  config-entry-unloading: done
+  docs-configuration-parameters: todo
+  docs-installation-parameters: todo
+  entity-unavailable: done
+  integration-owner: done
+  log-when-unavailable: todo
+  parallel-updates:
+    status: todo
+    comment: PARALLEL_UPDATES not yet declared on the sensor/binary_sensor/device_tracker platforms.
+  reauthentication-flow:
+    status: exempt
+    comment: >
+      Meshtastic's TCP/Serial/Bluetooth/HTTP connections are unauthenticated
+      (no credentials are ever stored), so there is nothing to
+      re-authenticate. Connection details can be changed via the existing
+      reconfigure flow.
+  test-coverage:
+    status: todo
+    comment: Below the 95% bar; see tests/ for current coverage.

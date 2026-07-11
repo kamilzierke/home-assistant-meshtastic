@@ -54,7 +54,7 @@ from .const import (
     ConnectionType,
 )
 from .coordinator import MeshtasticDataUpdateCoordinator
-from .data import DATA_COMPONENT, MeshtasticConfigEntry, MeshtasticData
+from .data import DATA_COMPONENT, DATA_WEB_CLIENT_LOADED, MeshtasticConfigEntry, MeshtasticData
 from .entity import (
     GatewayChannelEntity,
     GatewayDirectMessageEntity,
@@ -93,14 +93,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 
 async def async_setup_meshtastic_web(hass: HomeAssistant) -> bool:
-    if hass.data[DOMAIN].config.get("meshtastic_web_loaded", False):
+    if hass.data.get(DATA_WEB_CLIENT_LOADED, False):
         return True
 
     try:
         await meshtastic_web.async_setup(hass)
         await frontend.async_register_frontend(hass)
-        hass.data[DOMAIN].config["meshtastic_web_loaded"] = True
-    except:  # noqa: E722
+        hass.data[DATA_WEB_CLIENT_LOADED] = True
+    except Exception:  # noqa: BLE001
         LOGGER.warning("Failed to setup frontend", exc_info=True)
         return False
     else:
@@ -108,13 +108,13 @@ async def async_setup_meshtastic_web(hass: HomeAssistant) -> bool:
 
 
 async def async_unload_meshtastic_web(hass: HomeAssistant) -> bool:
-    if not hass.data[DOMAIN].config.get("meshtastic_web_loaded", False):
+    if not hass.data.get(DATA_WEB_CLIENT_LOADED, False):
         return True
 
     try:
         await frontend.async_unregister_frontend(hass)
-        hass.data[DOMAIN].config["meshtastic_web_loaded"] = False
-    except:  # noqa: E722
+        hass.data[DATA_WEB_CLIENT_LOADED] = False
+    except Exception:  # noqa: BLE001
         LOGGER.warning("Failed to unload frontend", exc_info=True)
         return False
     else:
@@ -341,7 +341,7 @@ async def async_unload_entry(
     try:
         if entry.runtime_data and entry.runtime_data.client:
             await entry.runtime_data.client.disconnect()
-    except:  # noqa: E722
+    except Exception:  # noqa: BLE001
         LOGGER.warning("Failed to disconnect client during unload of entry", exc_info=True)
 
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
@@ -433,5 +433,5 @@ async def _add_entities_for_entry(hass: HomeAssistant, entities: list[Entity], e
                 device_id = device.id
         try:
             entity_registry.async_update_entity(e.entity_id, config_entry_id=entry.entry_id, device_id=device_id)
-        except:  # noqa: E722
+        except Exception:  # noqa: BLE001
             LOGGER.warning("Failed to update entity %s", e, exc_info=True)

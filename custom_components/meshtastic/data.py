@@ -33,3 +33,8 @@ class MeshtasticData:
 
 
 DATA_COMPONENT: HassKey[EntityComponent[MeshtasticEntity]] = HassKey(DOMAIN)
+# Whether the shared meshtastic_web frontend/HTTP views have been registered
+# for this hass instance yet (they're shared across config entries, so only
+# the first entry that enables the web client needs to set them up, and they
+# should only be torn down once no entry has it enabled anymore).
+DATA_WEB_CLIENT_LOADED: HassKey[bool] = HassKey(f"{DOMAIN}_web_client_loaded")
