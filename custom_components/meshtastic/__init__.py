@@ -54,7 +54,13 @@ from .const import (
     ConnectionType,
 )
 from .coordinator import MeshtasticDataUpdateCoordinator
-from .data import DATA_COMPONENT, DATA_WEB_CLIENT_LOADED, MeshtasticConfigEntry, MeshtasticData
+from .data import (
+    DATA_COMPONENT,
+    DATA_WEB_CLIENT_LOADED,
+    DATA_WEB_VIEWS_REGISTERED,
+    MeshtasticConfigEntry,
+    MeshtasticData,
+)
 from .entity import (
     GatewayChannelEntity,
     GatewayDirectMessageEntity,
@@ -93,13 +99,18 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 
 async def async_setup_meshtastic_web(hass: HomeAssistant) -> bool:
-    if hass.data.get(DATA_WEB_CLIENT_LOADED, False):
-        return True
-
     try:
-        await meshtastic_web.async_setup(hass)
-        await frontend.async_register_frontend(hass)
-        hass.data[DATA_WEB_CLIENT_LOADED] = True
+        # HTTP views/static paths can't be unregistered once added, so this
+        # part must only ever run once per process - independent of how many
+        # times the web client gets toggled on/off across config entry
+        # reloads (see DATA_WEB_VIEWS_REGISTERED).
+        if not hass.data.get(DATA_WEB_VIEWS_REGISTERED, False):
+            await meshtastic_web.async_setup(hass)
+            hass.data[DATA_WEB_VIEWS_REGISTERED] = True
+
+        if not hass.data.get(DATA_WEB_CLIENT_LOADED, False):
+            await frontend.async_register_frontend(hass)
+            hass.data[DATA_WEB_CLIENT_LOADED] = True
     except Exception:  # noqa: BLE001
         LOGGER.warning("Failed to setup frontend", exc_info=True)
         return False

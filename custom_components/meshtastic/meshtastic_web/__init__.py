@@ -32,7 +32,7 @@ from ..const import (  # noqa: TID252
 if TYPE_CHECKING:
     from ..data import MeshtasticConfigEntry  # noqa: TID252
 
-_LOGGER = LOGGER.getChild(__name__)
+_LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))
 
 
 class MeshtasticWebApiContext:
@@ -218,7 +218,7 @@ async def async_setup(hass: HomeAssistant) -> bool:
             [StaticPathConfig(f"{URL_BASE}/web", str(Path(__file__).parent / "static"))]
         )
     except Exception:  # noqa: BLE001
-        _LOGGER.warning("Failed to setup meshtastic web")
+        _LOGGER.warning("Failed to setup meshtastic web", exc_info=True)
         return False
     else:
         return True

@@ -15,7 +15,7 @@ from ..const import (  # noqa: TID252
 from ..data import MeshtasticConfigEntry  # noqa: TID252
 from .server import MeshtasticTcpProxy
 
-_LOGGER = LOGGER.getChild(__name__)
+_LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))
 
 _servers: dict[str, MeshtasticTcpProxy] = {}
 

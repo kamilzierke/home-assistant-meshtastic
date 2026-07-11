@@ -15,7 +15,7 @@ from custom_components.meshtastic.aiomeshtastic.connection.streaming import Stre
 from custom_components.meshtastic.aiomeshtastic.protobuf import mesh_pb2
 from custom_components.meshtastic.const import LOGGER
 
-_LOGGER = LOGGER.getChild(__name__)
+_LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))
 
 
 class ClientProxyTransport(StreamingClientTransport):

@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from .aiomeshtastic.interface import MeshNode, TelemetryType
     from .aiomeshtastic.packet import Packet
 
-_LOGGER = LOGGER.getChild(__name__)
+_LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))
 
 
 EVENT_MESHTASTIC_API_BASE = f"{DOMAIN}_api"

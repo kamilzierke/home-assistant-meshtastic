@@ -66,7 +66,7 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.data_entry_flow import FlowResult
 
-_LOGGER = LOGGER.getChild(__name__)
+_LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))
 
 
 def _step_user_data_connection_tcp_schema_factory(host: str = "", port: int | None = None) -> vol.Schema:
