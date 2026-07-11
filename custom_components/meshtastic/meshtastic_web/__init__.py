@@ -256,6 +256,9 @@ def _render_connect_instructions_html(*, connection_value: str, use_https: bool,
   <li>Open the web client (button below), then <strong>Add connection</strong> &rarr; <strong>Network</strong>.</li>
   <li>Paste this into the <strong>URL or IP</strong> field:
     <div class="row"><code id="value">{safe_value}</code><button type="button" onclick="copyValue()">Copy</button></div>
+    <p id="copy-hint" style="display:none;color:#555;font-size:0.9rem;">
+      Copied (or selected - press Ctrl+C / Cmd+C if it didn't copy automatically).
+    </p>
   </li>
   <li>{https_hint} <strong>Use HTTPS</strong>, matching how you're accessing Home Assistant right now.</li>
   <li>Save the connection.</li>
@@ -263,7 +266,29 @@ def _render_connect_instructions_html(*, connection_value: str, use_https: bool,
 <a class="button" href="{safe_client_url}">Open Meshtastic Web Client</a>
 <script>
 function copyValue() {{
-  navigator.clipboard.writeText(document.getElementById("value").textContent);
+  var el = document.getElementById("value");
+  var hint = document.getElementById("copy-hint");
+  // navigator.clipboard is only available in secure contexts (HTTPS/localhost) -
+  // most Home Assistant instances are plain HTTP on the local network, so fall
+  // back to selecting the text (and trying the older execCommand) instead.
+  if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {{
+    navigator.clipboard.writeText(el.textContent).catch(function () {{ selectAndCopyFallback(el); }});
+  }} else {{
+    selectAndCopyFallback(el);
+  }}
+  hint.style.display = "block";
+}}
+function selectAndCopyFallback(el) {{
+  var range = document.createRange();
+  range.selectNodeContents(el);
+  var selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  try {{
+    document.execCommand("copy");
+  }} catch (err) {{
+    // Text is at least selected now, so Ctrl+C/Cmd+C still works manually.
+  }}
 }}
 </script>
 </body>
