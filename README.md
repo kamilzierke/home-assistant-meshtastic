@@ -9,12 +9,16 @@ SPDX-License-Identifier: MIT
 
 [![GitHub Release][releases-shield]][releases]
 [![License][license-shield]](LICENSE)
-
 [![hacs](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://hacs.xyz/docs/faq/custom_repositories)
-[![HA Analytics](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fanalytics.home-assistant.io%2Fcustom_integrations.json&query=%24.meshtastic.total&style=for-the-badge&label=Active%20Installations&color=red)](https://buymeacoffee.com/broglep)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/kamz)
 
+[![Meshtastic](https://github.com/meshtastic.png?size=48)][meshtastic-org]
 
-_Home Assistant Integration for [Meshtastic](https://www.meshtastic.org)._
+_Home Assistant Integration for [Meshtastic][meshtastic-org], the open source, off-grid, decentralized mesh network._
+
+> This is a maintained fork of the official [meshtastic/home-assistant][upstream-repo] integration,
+> originally created by [Pascal Brogle (@broglep)][broglep], with contributions from
+> [Ylian Saint-Hilaire (@ylianst)][ylianst] and the community. See [Credits](#credits) below.
 
 Supported Features:
  * Add meshtastic devices as gateways to interact with the mesh
@@ -36,7 +40,7 @@ For more details, see check the [documentation](#documentation).
 
 ### Recommended: [HACS](https://www.hacs.xyz)
 
-1. Add this repository as a custom repository to HACS: [![Add Repository](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=meshtastic&repository=home-assistant&category=integration)
+1. Add this repository as a custom repository to HACS: [![Add Repository](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=kamilzierke&repository=home-assistant-meshtastic&category=integration)
 2. Use HACS to install the integration.
 3. Restart Home Assistant.
 4. Set up the integration using the UI: [![Add Integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=meshtastic)
@@ -332,11 +336,39 @@ Inside the Meshtastic Web Client:
 
 If you want to contribute to this please read the [Contribution guidelines](CONTRIBUTING.md)
 
+## Credits
+
+This integration was originally created by [Pascal Brogle (@broglep)][broglep] under the
+official [meshtastic/home-assistant][upstream-repo] organization repository, with contributions
+from [Ylian Saint-Hilaire (@ylianst)][ylianst] and the wider community. All credit for the
+original design and implementation goes to them and the upstream contributors.
+
+This repository is a maintained fork by [@kamilzierke](https://github.com/kamilzierke).
+For the original, upstream-maintained version, see [meshtastic/home-assistant][upstream-repo].
+
+### Meshtastic
+
+[![Meshtastic][meshtastic-logo]][meshtastic-org]
+
+This integration connects Home Assistant to [Meshtastic][meshtastic-org], an open source,
+off-grid, decentralized mesh networking project built on affordable, low-power LoRa radios.
+
+- Website: [meshtastic.org][meshtastic-org]
+- Official GitHub organization: [github.com/meshtastic][meshtastic-github]
+- Firmware: [meshtastic/firmware](https://github.com/meshtastic/firmware)
+- Bundled web client: [meshtastic/web](https://github.com/meshtastic/web)
+
 ***
 
-[commits-shield]: https://img.shields.io/github/commit-activity/y/meshtastic/home-assistant.svg?style=for-the-badge
-[commits]: https://github.com/meshtastic/home-assistant/commits/main
-[license-shield]: https://img.shields.io/github/license/meshtastic/home-assistant.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/meshtastic/home-assistant.svg?style=for-the-badge
-[releases]: https://github.com/meshtastic/home-assistant/releases
+[broglep]: https://github.com/broglep
+[ylianst]: https://github.com/ylianst
+[upstream-repo]: https://github.com/meshtastic/home-assistant
+[meshtastic-org]: https://meshtastic.org
+[meshtastic-github]: https://github.com/meshtastic
+[meshtastic-logo]: https://github.com/meshtastic.png?size=64
+[commits-shield]: https://img.shields.io/github/commit-activity/y/kamilzierke/home-assistant-meshtastic.svg?style=for-the-badge
+[commits]: https://github.com/kamilzierke/home-assistant-meshtastic/commits/main
+[license-shield]: https://img.shields.io/github/license/kamilzierke/home-assistant-meshtastic.svg?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/release/kamilzierke/home-assistant-meshtastic.svg?style=for-the-badge
+[releases]: https://github.com/kamilzierke/home-assistant-meshtastic/releases
 

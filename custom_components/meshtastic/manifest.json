@@ -16,13 +16,14 @@
     }
   ],
   "codeowners": [
-    "@broglep"
+    "@broglep",
+    "@kamilzierke"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/meshtastic/home-assistant",
+  "documentation": "https://github.com/kamilzierke/home-assistant-meshtastic",
   "integration_type": "hub",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/meshtastic/home-assistant/issues",
+  "issue_tracker": "https://github.com/kamilzierke/home-assistant-meshtastic/issues",
   "requirements": [
     "pyserial-asyncio-fast>=0.16",
     "aiomqtt>=2.5.1",
