@@ -64,7 +64,10 @@ EOT
 
 # Copy to the source controlled tree
 mkdir -p custom_components/meshtastic/aiomeshtastic/protobuf
+# Remove both generated .py and .pyi files first, so protos removed upstream
+# don't leave orphaned stub files behind after regeneration.
 rm -rf custom_components/meshtastic/aiomeshtastic/protobuf/*pb2*.py
+rm -rf custom_components/meshtastic/aiomeshtastic/protobuf/*pb2*.pyi
 cp "${OUTDIR}/meshtastic/aiomeshtastic/protobuf"/* custom_components/meshtastic/aiomeshtastic/protobuf
 
 exit 0
