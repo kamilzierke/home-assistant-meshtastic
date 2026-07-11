@@ -308,12 +308,19 @@ To access the web client, perform the following steps:
 In Home Assistant:
 1. Enable the feature in the integration configuration
 2. Navigate to the "Meshtastic" menu item. If you don't see it, reload home assistant interface
-3. Press the "Open" button of the desired gateway to launch the web client
+3. Press the "Open" button of the desired gateway - this opens an intermediate page with the exact
+   address to connect to (the bundled web client's "Connections" page doesn't auto-fill it)
+
+On that intermediate page:
+
+4. Press "Copy" to copy the address, then press "Open Meshtastic Web Client"
 
 Inside the Meshtastic Web Client:
 
-4. Press "New Connection" - the correct hostname is already populated
-5. Press "Connect"
+5. Press "Add connection" -> "Network"
+6. Paste the copied address into the "URL or IP" field, matching the "Use HTTPS" toggle to how
+   you're accessing Home Assistant
+7. Save/connect
 
 ## Contributions are welcome!
 

@@ -5,10 +5,10 @@
 import asyncio
 import contextlib
 import datetime
+import html
 from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
-from urllib.parse import urlencode
 
 import homeassistant.helpers.entity_registry as er
 from aiohttp import web
@@ -224,6 +224,53 @@ async def async_setup(hass: HomeAssistant) -> bool:
         return True
 
 
+def _render_connect_instructions_html(*, connection_value: str, use_https: bool, client_url: str) -> str:
+    # connection_value is derived from the request's Host header, which a
+    # client fully controls - escape it before embedding in HTML.
+    safe_value = html.escape(connection_value)
+    safe_client_url = html.escape(client_url)
+    https_hint = "Turn on" if use_https else "Leave off"
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Connect Meshtastic Web Client</title>
+<style>
+  body {{ font-family: system-ui, sans-serif; max-width: 640px; margin: 3rem auto; padding: 0 1rem; }}
+  code {{
+    background: #eee; padding: 0.5rem 0.75rem; border-radius: 4px;
+    font-size: 1rem; user-select: all; word-break: break-all;
+  }}
+  .row {{ display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; }}
+  button {{ padding: 0.4rem 0.8rem; cursor: pointer; }}
+  a.button {{
+    display: inline-block; margin-top: 1.5rem; padding: 0.6rem 1.2rem;
+    background: #03a9f4; color: #fff; text-decoration: none; border-radius: 4px;
+  }}
+</style>
+</head>
+<body>
+<h1>Connect the Meshtastic Web Client</h1>
+<p>The web client's "Connections" page needs this address entered manually - it does not auto-fill.</p>
+<ol>
+  <li>Open the web client (button below), then <strong>Add connection</strong> &rarr; <strong>Network</strong>.</li>
+  <li>Paste this into the <strong>URL or IP</strong> field:
+    <div class="row"><code id="value">{safe_value}</code><button type="button" onclick="copyValue()">Copy</button></div>
+  </li>
+  <li>{https_hint} <strong>Use HTTPS</strong>, matching how you're accessing Home Assistant right now.</li>
+  <li>Save the connection.</li>
+</ol>
+<a class="button" href="{safe_client_url}">Open Meshtastic Web Client</a>
+<script>
+function copyValue() {{
+  navigator.clipboard.writeText(document.getElementById("value").textContent);
+}}
+</script>
+</body>
+</html>
+"""
+
+
 class MeshtasticWebConfigEntryView(HomeAssistantView):
     url = URL_BASE + "/web/{entity_id}"
     name = "meshtastic:web_api_index"
@@ -237,7 +284,7 @@ class MeshtasticWebConfigEntryView(HomeAssistantView):
 
     async def get(
         self,
-        request: HomeAssistantRequest,  # noqa: ARG002
+        request: HomeAssistantRequest,
         entity_id: str,
     ) -> web.Response:
         if not entity_id.startswith("gateway_"):
@@ -263,8 +310,22 @@ class MeshtasticWebConfigEntryView(HomeAssistantView):
         ):
             return web.HTTPForbidden(body="Web client not enabled for gateway", headers={"Cache-Control": "no-cache"})
 
-        return web.HTTPTemporaryRedirect(
-            location=f"{URL_BASE}/web/index.html?" + urlencode({"path": path}), headers={"Cache-Control": "no-cache"}
+        # meshtastic/web's "Connections" page (since v2.7.1) no longer reads a
+        # `?path=` query param to auto-fill/auto-connect - its "Add connection"
+        # dialog only has a single free-text "URL or IP" field, which it
+        # concatenates directly after "http(s)://" with no separate path
+        # component. So instead of redirecting straight into the client (which
+        # would land on an empty "No connections yet" screen with no way to
+        # know what to enter), show the exact value to paste in first.
+        connection_value = f"{request.host}{path}"
+        return web.Response(
+            text=_render_connect_instructions_html(
+                connection_value=connection_value,
+                use_https=request.secure,
+                client_url=f"{URL_BASE}/web/index.html",
+            ),
+            content_type="text/html",
+            headers={"Cache-Control": "no-cache"},
         )
 
 
