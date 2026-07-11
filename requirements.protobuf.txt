@@ -1,2 +1,8 @@
-
-mypy-protobuf
+# Only needed for scripts/generate_protobufs.
+# grpcio-tools provides the protoc compiler (invoked as `python -m grpc_tools.protoc`);
+# mypy-protobuf provides its --mypy_out plugin for generating *.pyi stubs.
+# These are pinned for reproducibility - the `protobuf` version grpcio-tools pulls in
+# becomes the generated code's minimum runtime requirement (see the comment at the top
+# of scripts/generate_protobufs), so bumping this deliberately, not silently via `>=`.
+grpcio-tools==1.82.1
+mypy-protobuf==5.1.0

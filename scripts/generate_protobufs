@@ -1,4 +1,20 @@
 #!/usr/bin/env bash
+#
+# Regenerates custom_components/meshtastic/aiomeshtastic/protobuf/*_pb2.py(i)
+# from the `protobufs` submodule. Requires `pip install -r requirements.protobuf.txt`
+# (grpcio-tools provides the protoc compiler via `python -m grpc_tools.protoc`,
+# mypy-protobuf provides the --mypy_out plugin).
+#
+# IMPORTANT: the generated *_pb2.py files embed a "gencode" protobuf version
+# (whatever `protobuf` version grpcio-tools pulled in) and refuse to import at
+# runtime against an OLDER `protobuf` package - see
+# https://protobuf.dev/support/cross-version-runtime-guarantee. After running
+# this script, check the "Protobuf Python Version: X.Y.Z" comment near the top
+# of any regenerated *_pb2.py file and make sure
+# custom_components/meshtastic/manifest.json's `protobuf>=X.Y.Z` requirement
+# (and requirements.txt's pin) is at least that version - otherwise HA can
+# resolve an older protobuf release that fails with
+# "google.protobuf.runtime_version.VersionError" on startup.
 
 set -e
 
@@ -45,7 +61,7 @@ $SEDCMD 's/^import "meshtastic\//import "meshtastic\/aiomeshtastic\/protobuf\//'
 $SEDCMD 's/^import "nanopb.proto";/import "meshtastic\/aiomeshtastic\/protobuf\/nanopb.proto";/' "${INDIR}/"*.proto
 
 # Generate the python files
-protoc -I="$TMPDIR/in" --python_out "${OUTDIR}" "--mypy_out=${PYIDIR}" "${INDIR}/"*.proto
+python3 -m grpc_tools.protoc -I="$TMPDIR/in" --python_out "${OUTDIR}" "--mypy_out=${PYIDIR}" "${INDIR}/"*.proto
 
 # Change to relative imports
 $SEDCMD 's/^from meshtastic.aiomeshtastic.protobuf import/from . import/' "${OUTDIR}/meshtastic/aiomeshtastic/protobuf/"*pb2*.py
