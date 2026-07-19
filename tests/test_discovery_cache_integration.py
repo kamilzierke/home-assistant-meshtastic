@@ -1,0 +1,151 @@
+# SPDX-FileCopyrightText: 2024-2025 Pascal Brogle @broglep
+#
+# SPDX-License-Identifier: MIT
+"""
+Integration tests for the discovered-fields cache surviving a restart (problem 7).
+
+Simulates "Home Assistant restart" by unloading and re-setting-up the same config
+entry within one test - the fixture's mock node data is swapped out in between to
+mimic a fresh boot where the gateway hasn't redelivered environment telemetry yet.
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.meshtastic.const import (
+    CONF_CONNECTION_TCP_HOST,
+    CONF_CONNECTION_TCP_PORT,
+    CONF_CONNECTION_TYPE,
+    CONF_OPTION_FILTER_NODES,
+    CURRENT_CONFIG_VERSION_MAJOR,
+    CURRENT_CONFIG_VERSION_MINOR,
+    DOMAIN,
+    ConnectionType,
+)
+
+from .conftest import GATEWAY_NODE, GATEWAY_NODE_NUM, TEST_NODE, TEST_NODE_NUM
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
+TEMPERATURE_ENTITY_ID = f"sensor.{DOMAIN}_tgw1_{TEST_NODE_NUM}_environment_temperature"
+
+
+def _build_entry() -> MockConfigEntry:
+    return MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=str(GATEWAY_NODE_NUM),
+        version=CURRENT_CONFIG_VERSION_MAJOR,
+        minor_version=CURRENT_CONFIG_VERSION_MINOR,
+        data={
+            CONF_CONNECTION_TYPE: ConnectionType.TCP.value,
+            CONF_CONNECTION_TCP_HOST: "127.0.0.1",
+            CONF_CONNECTION_TCP_PORT: 4403,
+        },
+        options={
+            CONF_OPTION_FILTER_NODES: [{"id": TEST_NODE_NUM, "name": TEST_NODE["user"]["longName"]}],
+        },
+    )
+
+
+@pytest.fixture
+def mock_client_with_env_metrics():
+    """Like mock_meshtastic_api_client, but the node already reports environmentMetrics (pre-restart state)."""
+    node_with_env = {**TEST_NODE, "environmentMetrics": {"temperature": 21.5}}
+    nodes = {GATEWAY_NODE_NUM: GATEWAY_NODE, TEST_NODE_NUM: node_with_env}
+
+    client = MagicMock()
+    client.connect = AsyncMock()
+    client.disconnect = AsyncMock()
+    client.async_get_own_node = AsyncMock(return_value=GATEWAY_NODE)
+    client.get_own_node = MagicMock(return_value=GATEWAY_NODE)
+    client.async_get_all_nodes = AsyncMock(return_value=nodes)
+    client.async_get_channels = AsyncMock(return_value=[])
+    client.async_get_node_local_config = AsyncMock(return_value={})
+    client.async_get_node_module_config = AsyncMock(return_value={})
+    client.metadata = {}
+
+    with patch("custom_components.meshtastic.MeshtasticApiClient", return_value=client):
+        yield client
+
+
+async def test_environment_sensor_restored_as_unavailable_after_restart(
+    hass: HomeAssistant,
+    mock_client_with_env_metrics,
+    mock_meshtastic_api_client,
+) -> None:
+    entry = _build_entry()
+    entry.add_to_hass(hass)
+
+    # "Boot 1": the node already has environmentMetrics (e.g. from the device's own
+    # replayed NodeDB), so the temperature sensor gets created and has a value.
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get(TEMPERATURE_ENTITY_ID).state == "21.5"
+
+    # Unload flushes the discovery cache (coordinator.async_shutdown, see __init__.py).
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
+    # "Boot 2" (simulated restart): swap in the plain fixture, where the node has no
+    # environmentMetrics yet - as if the gateway hasn't redelivered telemetry since restart.
+    with patch("custom_components.meshtastic.MeshtasticApiClient", return_value=mock_meshtastic_api_client):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    state = hass.states.get(TEMPERATURE_ENTITY_ID)
+    assert state is not None, "previously discovered sensor must still exist after restart"
+    assert state.state == "unavailable"
+
+
+async def test_unrelated_missing_field_does_not_delete_sensor(
+    hass: HomeAssistant,
+    mock_meshtastic_api_client,
+    mock_nodes,
+) -> None:
+    """A single coordinator update that omits a field must not delete that field's entity."""
+    from custom_components.meshtastic.api import (
+        ATTR_EVENT_MESHTASTIC_API_CONFIG_ENTRY_ID,
+        ATTR_EVENT_MESHTASTIC_API_DATA,
+        ATTR_EVENT_MESHTASTIC_API_NODE,
+        ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE,
+        EVENT_MESHTASTIC_API_TELEMETRY,
+        EventMeshtasticApiTelemetryType,
+    )
+
+    entry = _build_entry()
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    hass.bus.async_fire(
+        EVENT_MESHTASTIC_API_TELEMETRY,
+        {
+            ATTR_EVENT_MESHTASTIC_API_CONFIG_ENTRY_ID: entry.entry_id,
+            ATTR_EVENT_MESHTASTIC_API_NODE: TEST_NODE_NUM,
+            ATTR_EVENT_MESHTASTIC_API_DATA: {"temperature": 20.0, "relativeHumidity": 50.0},
+            ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE: EventMeshtasticApiTelemetryType.ENVIRONMENT_METRICS,
+        },
+    )
+    await hass.async_block_till_done()
+    assert hass.states.get(TEMPERATURE_ENTITY_ID).state == "20.0"
+
+    # A second packet only reports humidity (temperature momentarily absent).
+    hass.bus.async_fire(
+        EVENT_MESHTASTIC_API_TELEMETRY,
+        {
+            ATTR_EVENT_MESHTASTIC_API_CONFIG_ENTRY_ID: entry.entry_id,
+            ATTR_EVENT_MESHTASTIC_API_NODE: TEST_NODE_NUM,
+            ATTR_EVENT_MESHTASTIC_API_DATA: {"relativeHumidity": 55.0},
+            ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE: EventMeshtasticApiTelemetryType.ENVIRONMENT_METRICS,
+        },
+    )
+    await hass.async_block_till_done()
+
+    state = hass.states.get(TEMPERATURE_ENTITY_ID)
+    assert state is not None, "temperature entity must not be deleted by a momentary gap"

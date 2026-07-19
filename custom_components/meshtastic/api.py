@@ -31,6 +31,7 @@ from .aiomeshtastic import (
     TcpConnection as AioTcpConnection,
 )
 from .aiomeshtastic.errors import MeshRoutingError, MeshtasticError
+from .aiomeshtastic.interface import MeshNode
 from .aiomeshtastic.protobuf import portnums_pb2
 from .const import (
     CONF_CONNECTION_BLUETOOTH_ADDRESS,
@@ -50,7 +51,7 @@ if TYPE_CHECKING:
     from google.protobuf.message import Message
     from homeassistant.core import HomeAssistant
 
-    from .aiomeshtastic.interface import MeshNode, TelemetryType
+    from .aiomeshtastic.interface import TelemetryType
     from .aiomeshtastic.packet import Packet
 
 _LOGGER = LOGGER.getChild(__name__.removeprefix(f"{LOGGER.name}."))
@@ -75,6 +76,26 @@ class EventMeshtasticApiTelemetryType(StrEnum):
     LOCAL_STATS = "local_stats"
     ENVIRONMENT_METRICS = "environment_metrics"
     POWER_METRICS = "power_metrics"
+    AIR_QUALITY_METRICS = "air_quality_metrics"
+    HEALTH_METRICS = "health_metrics"
+    HOST_METRICS = "host_metrics"
+    TRAFFIC_MANAGEMENT_STATS = "traffic_management_stats"
+
+
+# Maps the field name MessageToDict() puts on a Telemetry payload to the event
+# type fired for it. Driven by a map (rather than a repeated if/elif per variant)
+# so adding a new telemetry variant is a one-line change here plus one in
+# coordinator.TELEMETRY_TYPE_TO_DATA_KEY.
+TELEMETRY_VARIANTS: Mapping[str, EventMeshtasticApiTelemetryType] = {
+    "deviceMetrics": EventMeshtasticApiTelemetryType.DEVICE_METRICS,
+    "localStats": EventMeshtasticApiTelemetryType.LOCAL_STATS,
+    "environmentMetrics": EventMeshtasticApiTelemetryType.ENVIRONMENT_METRICS,
+    "powerMetrics": EventMeshtasticApiTelemetryType.POWER_METRICS,
+    "airQualityMetrics": EventMeshtasticApiTelemetryType.AIR_QUALITY_METRICS,
+    "healthMetrics": EventMeshtasticApiTelemetryType.HEALTH_METRICS,
+    "hostMetrics": EventMeshtasticApiTelemetryType.HOST_METRICS,
+    "trafficManagementStats": EventMeshtasticApiTelemetryType.TRAFFIC_MANAGEMENT_STATS,
+}
 
 
 class MeshtasticApiClientError(IntegrationError):
@@ -292,34 +313,18 @@ class MeshtasticApiClient:
         self._hass.bus.async_fire(EVENT_MESHTASTIC_API_TEXT_MESSAGE, event_data)
 
     async def _on_telemetry(self, node: MeshNode, telemetry: dict[str, Any]) -> None:
-        device_metrics = telemetry.get("deviceMetrics")
-        local_stats = telemetry.get("localStats")
-        environment_metrics = telemetry.get("environmentMetrics")
-        power_metrics = telemetry.get("powerMetrics")
-
+        # Check key presence, not truthiness: a variant can legitimately decode to an
+        # empty dict (e.g. every field in it still at its zero default), which is a
+        # real reading, not a missing one - `if telemetry.get(field):` would drop it.
         node_info = {"name": node.long_name}
-        if device_metrics:
-            event_data = self._build_event_data(node.id, device_metrics)
-            event_data[ATTR_EVENT_MESHTASTIC_API_NODE_INFO] = node_info
-            event_data[ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE] = EventMeshtasticApiTelemetryType.DEVICE_METRICS
-            self._hass.bus.async_fire(EVENT_MESHTASTIC_API_TELEMETRY, event_data)
+        for field_name, telemetry_type in TELEMETRY_VARIANTS.items():
+            if field_name not in telemetry:
+                continue
 
-        if local_stats:
-            event_data = self._build_event_data(node.id, local_stats)
+            self._logger.debug("Received %s telemetry for node %s", field_name, node.id)
+            event_data = self._build_event_data(node.id, telemetry[field_name])
             event_data[ATTR_EVENT_MESHTASTIC_API_NODE_INFO] = node_info
-            event_data[ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE] = EventMeshtasticApiTelemetryType.LOCAL_STATS
-            self._hass.bus.async_fire(EVENT_MESHTASTIC_API_TELEMETRY, event_data)
-
-        if environment_metrics:
-            event_data = self._build_event_data(node.id, environment_metrics)
-            event_data[ATTR_EVENT_MESHTASTIC_API_NODE_INFO] = node_info
-            event_data[ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE] = EventMeshtasticApiTelemetryType.ENVIRONMENT_METRICS
-            self._hass.bus.async_fire(EVENT_MESHTASTIC_API_TELEMETRY, event_data)
-
-        if power_metrics:
-            event_data = self._build_event_data(node.id, power_metrics)
-            event_data[ATTR_EVENT_MESHTASTIC_API_NODE_INFO] = node_info
-            event_data[ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE] = EventMeshtasticApiTelemetryType.POWER_METRICS
+            event_data[ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE] = telemetry_type
             self._hass.bus.async_fire(EVENT_MESHTASTIC_API_TELEMETRY, event_data)
 
     async def _on_position(self, node: MeshNode, position: dict[str, Any]) -> None:
@@ -351,29 +356,43 @@ class MeshtasticApiClient:
         task.add_done_callback(self._background_tasks.discard)
         return task
 
-    def _message_to_dict(self, message: Message) -> Mapping[str, Any]:
+    def _message_to_dict(self, message: Message) -> dict[str, Any]:
         try:
             return MessageToDict(message, always_print_fields_with_no_presence=True)
         except TypeError:
             # older protobuf version
             return MessageToDict(message, including_default_value_fields=True)
 
+    def _mesh_node_or_stub(self, node_id: int) -> MeshNode:
+        return self._interface.find_node(node_id=node_id) or MeshNode.stub_node(node_id)
+
     async def request_telemetry(self, node: int, telemetry_type: TelemetryType) -> Mapping[str, Any]:
         try:
             response = await self._interface.request_telemetry(node, telemetry_type=telemetry_type)
-            return self._message_to_dict(response)
         except MeshRoutingError as e:
             msg = f"No response for {telemetry_type}"
             raise MeshtasticApiClientError(msg) from e
         except MeshtasticError as e:
             raise MeshtasticApiClientError(str(e)) from e
 
+        response_dict = self._message_to_dict(response)
+        # Route the response through the same update path as a spontaneously received
+        # telemetry packet, so a manual service call updates entities too, not just
+        # the service response - instead of duplicating the coordinator-update logic.
+        self._logger.debug("Manual telemetry request for node %s succeeded", node)
+        await self._on_telemetry(self._mesh_node_or_stub(node), response_dict)
+        return response_dict
+
     async def request_position(self, node: int) -> Mapping[str, Any]:
         try:
             response = await self._interface.request_position(node)
-            return self._message_to_dict(response)
         except MeshtasticError as e:
             raise MeshtasticApiClientError(str(e)) from e
+
+        response_dict = self._message_to_dict(response)
+        self._logger.debug("Manual position request for node %s succeeded", node)
+        await self._on_position(self._mesh_node_or_stub(node), response_dict)
+        return response_dict
 
     async def request_traceroute(self, node: int) -> Mapping[str, Any]:
         try:

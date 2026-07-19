@@ -356,6 +356,30 @@
       },
       "environment_weight": {
         "name": "Weight"
+      },
+      "environment_voltage": {
+        "name": "Voltage"
+      },
+      "environment_current": {
+        "name": "Current"
+      },
+      "environment_radiation": {
+        "name": "Radiation"
+      },
+      "environment_rainfall1h": {
+        "name": "Rainfall (1h)"
+      },
+      "environment_rainfall24h": {
+        "name": "Rainfall (24h)"
+      },
+      "environment_soil_moisture": {
+        "name": "Soil Moisture"
+      },
+      "environment_soil_temperature": {
+        "name": "Soil Temperature"
+      },
+      "environment_one_wire_temperature": {
+        "name": "One-Wire Temperature"
       }
     },
     "meshtastic": {

@@ -200,7 +200,7 @@ class MeshInterface:
 
         async def wrapper(node: MeshNode, source: Packet) -> None:
             if as_dict:
-                await callback(node, google.protobuf.json_format.MessageToDict(source.app_payload))
+                await callback(node, self._message_to_dict(source.app_payload))
             elif as_packet:
                 await callback(node, source)
             else:
@@ -211,6 +211,22 @@ class MeshInterface:
 
     def nodes(self) -> Mapping[int, Mapping[str, Any]]:
         return MappingProxyType(self._node_database)
+
+    @staticmethod
+    def _message_to_dict(message: Message) -> dict[str, Any]:
+        """
+        Convert a protobuf message to a dict, keeping explicitly-set zero values.
+
+        Plain MessageToDict() omits scalar fields at their default value unless they
+        have explicit proto3 presence, which would make legitimate zero readings
+        (e.g. battery_level=0, rate_limit_drops=0) indistinguishable from "field not
+        reported" - breaking any downstream "field_name in telemetry" presence check.
+        """
+        try:
+            return google.protobuf.json_format.MessageToDict(message, always_print_fields_with_no_presence=True)
+        except TypeError:
+            # older protobuf version
+            return google.protobuf.json_format.MessageToDict(message, including_default_value_fields=True)
 
     def connected_node(self) -> Mapping[str, Any] | None:
         if not self._connected_node_ready.is_set():
@@ -619,7 +635,7 @@ class MeshInterface:
 
             await self._process_packet_for_app_listener(from_radio)
 
-    async def _process_packet_for_app_listener(self, from_radio: mesh_pb2.FromRadio) -> None:  # noqa: PLR0912
+    async def _process_packet_for_app_listener(self, from_radio: mesh_pb2.FromRadio) -> None:
         packet = Packet(from_radio)
         if packet.mesh_packet is None:
             return
@@ -636,21 +652,25 @@ class MeshInterface:
             return
 
         node_id = int(packet.from_id)
+        if node_id == self.BROADCAST_NUM:
+            return
         node = self.find_node(node_id) or MeshNode.stub_node(node_id)
 
         if packet.port_num == portnums_pb2.PortNum.TELEMETRY_APP:
             telemetry = packet.app_payload
-            telemetry_info = google.protobuf.json_format.MessageToDict(telemetry)
-            if node_id in self._node_database:
-                await self._node_database_update(node_id, **telemetry_info)
+            telemetry_info = self._message_to_dict(telemetry)
+            self._logger.debug("Received telemetry from node %s: %s", node_id, list(telemetry_info.keys()))
+            self._get_or_create_node(node_id)
+            await self._node_database_update(node_id, **telemetry_info)
         elif packet.port_num == portnums_pb2.PortNum.POSITION_APP:
             position = packet.app_payload
-            position_info = google.protobuf.json_format.MessageToDict(position)
-            if node_id in self._node_database:
-                await self._node_database_update(node_id, position=position_info)
+            position_info = self._message_to_dict(position)
+            self._logger.debug("Received position from node %s", node_id)
+            self._get_or_create_node(node_id)
+            await self._node_database_update(node_id, position=position_info)
         elif packet.port_num == portnums_pb2.PortNum.NODEINFO_APP:
             node_info = packet.app_payload
-            node_info_dict = google.protobuf.json_format.MessageToDict(node_info)
+            node_info_dict = self._message_to_dict(node_info)
             if node_id in self._node_database:
                 await self._node_database_update(node_id, **node_info_dict)
             else:
@@ -668,7 +688,7 @@ class MeshInterface:
             node_info = packet.node_info
             node_id = node_info.num
             try:
-                node_info_dict = google.protobuf.json_format.MessageToDict(node_info)
+                node_info_dict = self._message_to_dict(node_info)
                 db_node = self._get_or_create_node(node_info.num)
                 db_node.update(node_info_dict)
 
@@ -682,8 +702,15 @@ class MeshInterface:
             except:  # noqa: E722
                 self._logger.warning("Failed to process node info", exc_info=True)
 
-        if p.from_id:
-            await self._node_database_update(p.from_id, lastHeard=p.rx_time, snr=p.rx_snr)
+        if p.from_id and p.from_id != self.BROADCAST_NUM:
+            self._get_or_create_node(p.from_id)
+            reception_update: dict[str, Any] = {"lastHeard": p.rx_time, "snr": p.rx_snr}
+            # A packet arriving without a measured RSSI (e.g. relayed via MQTT, or a
+            # transport that doesn't report it) must not clobber the last known-good
+            # value - RSSI is a property of the local radio reception, not of the node.
+            if p.rx_rssi is not None:
+                reception_update["rssi"] = p.rx_rssi
+            await self._node_database_update(p.from_id, **reception_update)
 
     def _get_or_create_node(self, node_num: int) -> MutableMapping[str, Any]:
         if node_num == self.BROADCAST_NUM:
@@ -697,6 +724,7 @@ class MeshInterface:
 
     def _create_db_node(self, node_num: int, node_info: Mapping[str, Any] | None = None) -> MutableMapping[str, Any]:
         if node_info is None:
+            self._logger.debug("Creating minimal node db entry for unknown node %s", node_num)
             presumptive_id = f"!{node_num:08x}"
             n = {
                 "num": node_num,

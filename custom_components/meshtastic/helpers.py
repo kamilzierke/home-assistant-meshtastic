@@ -54,6 +54,12 @@ async def setup_platform_entry(
         entities = entity_factory(current_nodes, entry.runtime_data)
         new_entities = [s for s in entities if s.entity_id not in platform.entities]
         if new_entities:
+            LOGGER.debug(
+                "Dynamically adding %d new %s entities: %s",
+                len(new_entities),
+                platform.domain,
+                [e.entity_id for e in new_entities],
+            )
             async_add_entities(new_entities)
 
         # Gold quality-scale "dynamic-devices" pattern: remove entities for
@@ -69,6 +75,7 @@ async def setup_platform_entry(
             if getattr(entity, "node_id", None) is not None and entity.node_id not in current_nodes
         ]
         if stale_entity_ids:
+            LOGGER.debug("Removing %d entities for untracked nodes: %s", len(stale_entity_ids), stale_entity_ids)
             entity_registry = er.async_get(hass)
             for entity_id in stale_entity_ids:
                 entity_registry.async_remove(entity_id)

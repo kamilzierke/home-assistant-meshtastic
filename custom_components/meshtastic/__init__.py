@@ -139,6 +139,13 @@ async def async_setup_entry(
     coordinator = MeshtasticDataUpdateCoordinator(hass=hass)
     if coordinator.config_entry is None:
         coordinator.config_entry = entry
+    # DataUpdateCoordinator normally self-registers its shutdown on unload, but only
+    # if config_entry is already set at __init__ time - here it's assigned right
+    # after construction (above), so that auto-registration is a no-op and shutdown
+    # (which flushes the discovery cache, see coordinator.async_shutdown) must be
+    # wired up explicitly instead.
+    entry.async_on_unload(coordinator.async_shutdown)
+    await coordinator.async_setup_discovery_cache()
 
     client = MeshtasticApiClient(entry.data, hass=hass, config_entry_id=entry.entry_id)
 

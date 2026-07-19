@@ -34,6 +34,22 @@ class Packet[T]:
         return self.mesh_packet.rx_snr if self.mesh_packet is not None else None
 
     @property
+    def rx_rssi(self) -> int | None:
+        """
+        RSSI (dBm) of the last local radio reception of this packet, as seen by this gateway.
+
+        rx_rssi has no protobuf presence tracking, and firmware/MQTT sources that don't
+        measure RSSI leave it at its zero default - which is not a physically plausible
+        received signal strength, so 0 is treated the same as "not reported".
+        """
+        if self.mesh_packet is None:
+            return None
+        rssi = self.mesh_packet.rx_rssi
+        if rssi == 0:
+            return None
+        return rssi
+
+    @property
     def to_id(self) -> int | None:
         return self.mesh_packet.to if self.mesh_packet is not None else None
 

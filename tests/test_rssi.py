@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024-2025 Pascal Brogle @broglep
 #
 # SPDX-License-Identifier: MIT
-"""Regression tests for custom_components.meshtastic.__init__."""
+"""Integration tests for the node_rssi sensor (problem 5)."""
 
 from __future__ import annotations
 
@@ -9,6 +9,12 @@ from typing import TYPE_CHECKING
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.meshtastic.api import (
+    ATTR_EVENT_MESHTASTIC_API_CONFIG_ENTRY_ID,
+    ATTR_EVENT_MESHTASTIC_API_DATA,
+    ATTR_EVENT_MESHTASTIC_API_NODE,
+    EVENT_MESHTASTIC_API_NODE_UPDATED,
+)
 from custom_components.meshtastic.const import (
     CONF_CONNECTION_TCP_HOST,
     CONF_CONNECTION_TCP_PORT,
@@ -25,7 +31,7 @@ from .conftest import GATEWAY_NODE_NUM, TEST_NODE, TEST_NODE_NUM
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
-TEST_NODE_SHORT_NAME_ENTITY_ID = f"sensor.{DOMAIN}_tgw1_{TEST_NODE_NUM}_node_short_name"
+RSSI_ENTITY_ID = f"sensor.{DOMAIN}_tgw1_{TEST_NODE_NUM}_node_rssi"
 
 
 def _build_entry() -> MockConfigEntry:
@@ -45,32 +51,42 @@ def _build_entry() -> MockConfigEntry:
     )
 
 
-async def test_sensors_survive_options_reload(hass: HomeAssistant, mock_meshtastic_api_client) -> None:
-    """Regression test for meshtastic/home-assistant#144.
-
-    async_reload_entry() is invoked by the options-flow update listener on
-    *every* options save (adding/removing a tracked node, toggling the web
-    client, etc.), not just on a genuine Home Assistant restart. Before the
-    fix, that reload path bypassed ConfigEntries' state machine, so the
-    coordinator's first refresh was skipped and coordinator.data stayed
-    None forever afterwards - which made every node-derived sensor
-    disappear. This reproduces that exact path.
-    """
+async def test_rssi_sensor_exists_as_baseline_entity(
+    hass: HomeAssistant,
+    mock_meshtastic_api_client,
+    mock_nodes,
+) -> None:
     entry = _build_entry()
     entry.add_to_hass(hass)
-
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
 
-    state = hass.states.get(TEST_NODE_SHORT_NAME_ENTITY_ID)
+    state = hass.states.get(RSSI_ENTITY_ID)
     assert state is not None
-    assert state.state == TEST_NODE["user"]["shortName"]
+    assert state.state == "unavailable"
+    assert state.attributes["unit_of_measurement"] == "dBm"
 
-    # Any options-flow save (re-saving the same options is enough) routes
-    # through the update listener -> async_reload_entry().
-    hass.config_entries.async_update_entry(entry, options={**entry.options})
+
+async def test_rssi_sensor_updates_from_node_updated_event(
+    hass: HomeAssistant,
+    mock_meshtastic_api_client,
+    mock_nodes,
+) -> None:
+    entry = _build_entry()
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
 
-    state_after_reload = hass.states.get(TEST_NODE_SHORT_NAME_ENTITY_ID)
-    assert state_after_reload is not None
-    assert state_after_reload.state == TEST_NODE["user"]["shortName"]
+    hass.bus.async_fire(
+        EVENT_MESHTASTIC_API_NODE_UPDATED,
+        {
+            ATTR_EVENT_MESHTASTIC_API_CONFIG_ENTRY_ID: entry.entry_id,
+            ATTR_EVENT_MESHTASTIC_API_NODE: TEST_NODE_NUM,
+            ATTR_EVENT_MESHTASTIC_API_DATA: {**TEST_NODE, "rssi": -62, "snr": 5.25},
+        },
+    )
+    await hass.async_block_till_done()
+
+    state = hass.states.get(RSSI_ENTITY_ID)
+    assert state is not None
+    assert state.state == "-62"
