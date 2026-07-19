@@ -8,6 +8,15 @@ SPDX-License-Identifier: MIT
 
 All notable changes to this integration are documented in this file.
 
+## [0.8.2] - 2026-07-19
+
+### Fixed
+
+- No functional change from 0.8.1. That release's git tag was rewritten (to drop a stray commit
+  message trailer) without a version bump, which some HACS installs did not recognize as an
+  update. Re-released as 0.8.2 so the `position_location_source`/`position_altitude_source` fix
+  below actually reaches everyone.
+
 ## [0.8.1] - 2026-07-19
 
 ### Fixed
