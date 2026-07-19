@@ -63,7 +63,10 @@ async def test_rssi_sensor_exists_as_baseline_entity(
 
     state = hass.states.get(RSSI_ENTITY_ID)
     assert state is not None
-    assert state.state == "unavailable"
+    # No RSSI reading yet: the entity exists (coordinator-backed availability is
+    # about the coordinator/node, not the individual value) but reads as "unknown"
+    # until a value arrives, same as any other coordinator sensor with no data yet.
+    assert state.state == "unknown"
     assert state.attributes["unit_of_measurement"] == "dBm"
 
 

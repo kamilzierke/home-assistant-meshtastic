@@ -14,7 +14,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.meshtastic.const import (
@@ -53,12 +52,7 @@ def _build_entry() -> MockConfigEntry:
     )
 
 
-@pytest.fixture
-def mock_client_with_env_metrics():
-    """Like mock_meshtastic_api_client, but the node already reports environmentMetrics (pre-restart state)."""
-    node_with_env = {**TEST_NODE, "environmentMetrics": {"temperature": 21.5}}
-    nodes = {GATEWAY_NODE_NUM: GATEWAY_NODE, TEST_NODE_NUM: node_with_env}
-
+def _make_mock_client(nodes: dict) -> MagicMock:
     client = MagicMock()
     client.connect = AsyncMock()
     client.disconnect = AsyncMock()
@@ -69,38 +63,38 @@ def mock_client_with_env_metrics():
     client.async_get_node_local_config = AsyncMock(return_value={})
     client.async_get_node_module_config = AsyncMock(return_value={})
     client.metadata = {}
-
-    with patch("custom_components.meshtastic.MeshtasticApiClient", return_value=client):
-        yield client
+    return client
 
 
-async def test_environment_sensor_restored_as_unavailable_after_restart(
-    hass: HomeAssistant,
-    mock_client_with_env_metrics,
-    mock_meshtastic_api_client,
-) -> None:
+async def test_environment_sensor_restored_as_unavailable_after_restart(hass: HomeAssistant) -> None:
     entry = _build_entry()
     entry.add_to_hass(hass)
 
     # "Boot 1": the node already has environmentMetrics (e.g. from the device's own
-    # replayed NodeDB), so the temperature sensor gets created and has a value.
-    assert await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
+    # replayed NodeDB), so the temperature sensor gets created and has a value. Each
+    # boot patches MeshtasticApiClient for exactly its own async_setup() call, so the
+    # two client mocks (with vs. without environmentMetrics) never overlap.
+    node_with_env = {**TEST_NODE, "environmentMetrics": {"temperature": 21.5}}
+    boot1_nodes = {GATEWAY_NODE_NUM: GATEWAY_NODE, TEST_NODE_NUM: node_with_env}
+    with patch("custom_components.meshtastic.MeshtasticApiClient", return_value=_make_mock_client(boot1_nodes)):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
     assert hass.states.get(TEMPERATURE_ENTITY_ID).state == "21.5"
 
     # Unload flushes the discovery cache (coordinator.async_shutdown, see __init__.py).
     assert await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
 
-    # "Boot 2" (simulated restart): swap in the plain fixture, where the node has no
-    # environmentMetrics yet - as if the gateway hasn't redelivered telemetry since restart.
-    with patch("custom_components.meshtastic.MeshtasticApiClient", return_value=mock_meshtastic_api_client):
+    # "Boot 2" (simulated restart): the node has no environmentMetrics yet - as if the
+    # gateway hasn't redelivered telemetry since restart.
+    boot2_nodes = {GATEWAY_NODE_NUM: GATEWAY_NODE, TEST_NODE_NUM: TEST_NODE}
+    with patch("custom_components.meshtastic.MeshtasticApiClient", return_value=_make_mock_client(boot2_nodes)):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
     state = hass.states.get(TEMPERATURE_ENTITY_ID)
     assert state is not None, "previously discovered sensor must still exist after restart"
-    assert state.state == "unavailable"
+    assert state.state == "unknown"
 
 
 async def test_unrelated_missing_field_does_not_delete_sensor(

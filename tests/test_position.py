@@ -60,12 +60,21 @@ def _build_entry() -> MockConfigEntry:
 
 
 def _fire_position(hass: HomeAssistant, entry: MockConfigEntry, node_id: int, data: dict) -> None:
+    # Mirror api.py's _on_position(), which computes latitude/longitude from
+    # latitudeI/longitudeI before the event ever reaches the bus - firing the raw
+    # dict here would skip that and silently omit lat/long from coordinator data.
+    enriched = dict(data)
+    if "latitudeI" in enriched:
+        enriched["latitude"] = float(enriched["latitudeI"] * 10**-7)
+    if "longitudeI" in enriched:
+        enriched["longitude"] = float(enriched["longitudeI"] * 10**-7)
+
     hass.bus.async_fire(
         EVENT_MESHTASTIC_API_POSITION,
         {
             ATTR_EVENT_MESHTASTIC_API_CONFIG_ENTRY_ID: entry.entry_id,
             ATTR_EVENT_MESHTASTIC_API_NODE: node_id,
-            ATTR_EVENT_MESHTASTIC_API_DATA: data,
+            ATTR_EVENT_MESHTASTIC_API_DATA: enriched,
             ATTR_EVENT_MESHTASTIC_API_NODE_INFO: {"name": TEST_NODE["user"]["longName"]},
         },
     )
