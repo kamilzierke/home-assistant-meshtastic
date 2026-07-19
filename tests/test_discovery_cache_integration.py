@@ -16,6 +16,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.meshtastic.api import (
+    ATTR_EVENT_MESHTASTIC_API_CONFIG_ENTRY_ID,
+    ATTR_EVENT_MESHTASTIC_API_DATA,
+    ATTR_EVENT_MESHTASTIC_API_NODE,
+    ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE,
+    EVENT_MESHTASTIC_API_TELEMETRY,
+    EventMeshtasticApiTelemetryType,
+)
 from custom_components.meshtastic.const import (
     CONF_CONNECTION_TCP_HOST,
     CONF_CONNECTION_TCP_PORT,
@@ -66,24 +74,41 @@ def _make_mock_client(nodes: dict) -> MagicMock:
     return client
 
 
-async def test_environment_sensor_restored_as_unavailable_after_restart(hass: HomeAssistant) -> None:
+async def test_environment_sensor_restored_after_restart(hass: HomeAssistant) -> None:
     entry = _build_entry()
     entry.add_to_hass(hass)
 
-    # "Boot 1": the node already has environmentMetrics (e.g. from the device's own
-    # replayed NodeDB), so the temperature sensor gets created and has a value. Each
-    # boot patches MeshtasticApiClient for exactly its own async_setup() call, so the
-    # two client mocks (with vs. without environmentMetrics) never overlap.
-    node_with_env = {**TEST_NODE, "environmentMetrics": {"temperature": 21.5}}
-    boot1_nodes = {GATEWAY_NODE_NUM: GATEWAY_NODE, TEST_NODE_NUM: node_with_env}
+    # "Boot 1": each boot patches MeshtasticApiClient for exactly its own
+    # async_setup() call, so the two client mocks never overlap.
+    boot1_nodes = {GATEWAY_NODE_NUM: GATEWAY_NODE, TEST_NODE_NUM: TEST_NODE}
     with patch("custom_components.meshtastic.MeshtasticApiClient", return_value=_make_mock_client(boot1_nodes)):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
+
+    # Discover the temperature field via a real telemetry event (not baked into the
+    # node's initial data), so this actually exercises the discovery cache recording
+    # it (problem 7), rather than the field merely being present from the start.
+    hass.bus.async_fire(
+        EVENT_MESHTASTIC_API_TELEMETRY,
+        {
+            ATTR_EVENT_MESHTASTIC_API_CONFIG_ENTRY_ID: entry.entry_id,
+            ATTR_EVENT_MESHTASTIC_API_NODE: TEST_NODE_NUM,
+            ATTR_EVENT_MESHTASTIC_API_DATA: {"temperature": 21.5},
+            ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE: EventMeshtasticApiTelemetryType.ENVIRONMENT_METRICS,
+        },
+    )
+    await hass.async_block_till_done()
     assert hass.states.get(TEMPERATURE_ENTITY_ID).state == "21.5"
 
     # Unload flushes the discovery cache (coordinator.async_shutdown, see __init__.py).
     assert await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
+
+    # Home Assistant's own entity lifecycle keeps a "removed but restorable" state
+    # around after an unload; strip it so the assertion below can only pass because
+    # the discovery cache (not that unrelated mechanism) rebuilt the entity - as it
+    # would have to on a real process restart, where in-memory state is gone too.
+    hass.states.async_remove(TEMPERATURE_ENTITY_ID)
 
     # "Boot 2" (simulated restart): the node has no environmentMetrics yet - as if the
     # gateway hasn't redelivered telemetry since restart.
@@ -93,7 +118,7 @@ async def test_environment_sensor_restored_as_unavailable_after_restart(hass: Ho
         await hass.async_block_till_done()
 
     state = hass.states.get(TEMPERATURE_ENTITY_ID)
-    assert state is not None, "previously discovered sensor must still exist after restart"
+    assert state is not None, "previously discovered sensor must be rebuilt from the discovery cache after restart"
     assert state.state == "unknown"
 
 
@@ -103,15 +128,6 @@ async def test_unrelated_missing_field_does_not_delete_sensor(
     mock_nodes,
 ) -> None:
     """A single coordinator update that omits a field must not delete that field's entity."""
-    from custom_components.meshtastic.api import (
-        ATTR_EVENT_MESHTASTIC_API_CONFIG_ENTRY_ID,
-        ATTR_EVENT_MESHTASTIC_API_DATA,
-        ATTR_EVENT_MESHTASTIC_API_NODE,
-        ATTR_EVENT_MESHTASTIC_API_TELEMETRY_TYPE,
-        EVENT_MESHTASTIC_API_TELEMETRY,
-        EventMeshtasticApiTelemetryType,
-    )
-
     entry = _build_entry()
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
