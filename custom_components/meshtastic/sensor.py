@@ -1023,6 +1023,19 @@ def _epoch_to_datetime(value: int) -> datetime.datetime | None:
     return datetime.datetime.fromtimestamp(value, tz=datetime.UTC)
 
 
+# LocSource/AltSource are proto3 enums without field presence (see mesh.proto), so
+# the wire format cannot distinguish "device explicitly reported unset" from "device
+# never set this field at all" - both decode to LOC_UNSET/ALT_UNSET. Either way there
+# is no usable source to report, so treat it as no value rather than a real state.
+_UNSET_ENUM_VALUES = frozenset({"LOC_UNSET", "ALT_UNSET"})
+
+
+def _enum_unset_to_none(value: Any) -> Any:
+    if value in _UNSET_ENUM_VALUES:
+        return None
+    return value
+
+
 _POSITION_FIELDS: tuple[_MetricFieldSpec, ...] = (
     _MetricFieldSpec(
         field="satsInView",
@@ -1085,8 +1098,22 @@ _POSITION_FIELDS: tuple[_MetricFieldSpec, ...] = (
     _MetricFieldSpec(field="fixQuality", key="fix_quality", name="Fix Quality", icon="mdi:crosshairs-gps"),
     _MetricFieldSpec(field="fixType", key="fix_type", name="Fix Type", icon="mdi:crosshairs-gps"),
     _MetricFieldSpec(field="precisionBits", key="precision_bits", name="Precision Bits", icon="mdi:crosshairs-gps"),
-    _MetricFieldSpec(field="locationSource", key="location_source", name="Location Source", icon="mdi:map-marker"),
-    _MetricFieldSpec(field="altitudeSource", key="altitude_source", name="Altitude Source", icon="mdi:altimeter"),
+    _MetricFieldSpec(
+        field="locationSource",
+        key="location_source",
+        name="Location Source",
+        icon="mdi:map-marker",
+        state_class=None,
+        transform=_enum_unset_to_none,
+    ),
+    _MetricFieldSpec(
+        field="altitudeSource",
+        key="altitude_source",
+        name="Altitude Source",
+        icon="mdi:altimeter",
+        state_class=None,
+        transform=_enum_unset_to_none,
+    ),
     _MetricFieldSpec(
         field="timestamp",
         key="timestamp",

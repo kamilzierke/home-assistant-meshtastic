@@ -8,6 +8,17 @@ SPDX-License-Identifier: MIT
 
 All notable changes to this integration are documented in this file.
 
+## [0.8.1] - 2026-07-19
+
+### Fixed
+
+- `position_location_source` and `position_altitude_source` no longer spam the log with
+  `ValueError: ... has state class 'measurement' ... non-numeric value` and fail to update:
+  these sensors report a textual GNSS source (e.g. `LOC_MANUAL`, `ALT_GPS`), not a measurement,
+  and were missing the `state_class=None` override needed for that.
+- `LOC_UNSET`/`ALT_UNSET` (no location/altitude source reported) now surface as an `unknown`
+  state instead of the raw enum string.
+
 ## [0.8.0] - 2026-07-19
 
 ### Added
